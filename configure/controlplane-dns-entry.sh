@@ -17,7 +17,7 @@ then
     done
     ##########################################################
     INET=$(run_rmComm 'lb' 'k8s-lb' 'ip address show eth0')
-    echo $INET
+    #echo $INET
     INTERNAL_IP=$(echo $INET |grep 'inet '| sed -e 's/^.*inet //' -e 's/\/.*$//' | tr -d '\n')
     echo "k8s-lb "$INTERNAL_IP
     INTERNAL_MAC=$(echo $INET | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}' | sed -n '1p')

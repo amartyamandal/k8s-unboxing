@@ -4,13 +4,13 @@ function vg() {
     local vg_string=""
     if [[ "$1" == "cp" ]]
     then
-        vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_master VAGRANT_DOTFILE_PATH=.vagrant_k8s_master N_CPND=$k8s_ncpnd PROVIDER=$k8s_provider vagrant"
+        vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_master VAGRANT_DOTFILE_PATH=.vagrant_k8s_master N_CPND=$k8s_ncpnd SSHKEY=$node_private_key_name PROVIDER=$k8s_provider vagrant"
     elif [[ "$1" == "wrk" ]]
     then
-        vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_node VAGRANT_DOTFILE_PATH=.vagrant_k8s_node N_WRKND=$k8s_nwrknd PROVIDER=$k8s_provider vagrant"
+        vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_node VAGRANT_DOTFILE_PATH=.vagrant_k8s_node N_WRKND=$k8s_nwrknd PROVIDER=$k8s_provider SSHKEY=$node_private_key_name vagrant"
     elif [[ "$1" == "lb" ]]
     then
-        vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_lb VAGRANT_DOTFILE_PATH=.vagrant_k8s_lb PROVIDER=$k8s_provider vagrant"
+        vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_lb VAGRANT_DOTFILE_PATH=.vagrant_k8s_lb PROVIDER=$k8s_provider SSHKEY=$node_private_key_name vagrant"
     else
         echo "No node selected"
     fi
