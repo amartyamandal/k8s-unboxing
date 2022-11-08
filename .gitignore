@@ -9,5 +9,5 @@ script_test.sh
 cni/calico/calicoctl
 cni/calico/configure.txt
 cni/plugins
-tmp.json
+temp.json
 script/smoke-test-local.sh
