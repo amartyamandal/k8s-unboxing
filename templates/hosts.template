@@ -1,5 +1,5 @@
 127.0.0.1       localhost
-127.0.1.1       vindpro-server
+
 @CPHOSTS@
 k8s-lb-ip k8s-lb.@DOMAIN@
 @WRKHOSTS@
