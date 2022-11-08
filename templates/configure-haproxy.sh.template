@@ -1,0 +1,13 @@
+#!/bin/bash
+sudo haproxy -v
+sudo systemctl enable haproxy
+sudo systemctl start haproxy
+
+sudo cp ~/haproxy.cfg /etc/haproxy/haproxy.cfg
+sudo haproxy -f /etc/haproxy/haproxy.cfg -c
+
+sudo systemctl restart haproxy
+#sudo journalctl -u haproxy --since today --no-pager
+#sudo haproxy -f /etc/haproxy/haproxy.cfg -c
+#sudo systemctl restart haproxy
+#sudo systemctl reload haproxy

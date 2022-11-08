@@ -1,0 +1,52 @@
+PROVIDER = ENV["PROVIDER"]
+ENV['VAGRANT_DEFAULT_PROVIDER'] = PROVIDER 
+
+IMAGE_NAME = "generic/ubuntu2204"
+N = ENV["N_WRKND"].to_i
+Vagrant.configure("2") do |config|
+    config.ssh.insert_key = false
+    config.ssh.username = "vagrant"
+    config.ssh.private_key_path = ["~/.ssh/vindpro_local","~/.vagrant.d/insecure_private_key"]
+    config.ssh.forward_agent = true
+    config.vm.provision "shell" do |s|
+        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/vindpro_local.pub").first.strip
+        if ENV["PROVIDER"] == 'virtualbox'
+            s.inline = <<-SHELL
+            echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+            echo #{ssh_pub_key} >> /root/.ssh/authorized_keys
+            SHELL
+        else
+            s.inline = <<-SHELL
+            echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+            SHELL
+        end
+      end
+
+    config.vm.provider :PROVIDER do |v|
+        v.memory = 2048
+        v.cpus = 2
+        if ENV["PROVIDER"] == 'libvirt'
+            v.management_network_name = "vagrant-libvirt"
+        elsif ENV["PROVIDER"] == 'virtualbox'
+            v.management_network_name = "vboxnet0"
+        end
+    end
+    
+    (1..N).each do |j|
+        config.vm.define "k8s-node-#{j}" do |node|
+            node.vm.box = IMAGE_NAME
+            if ENV["PROVIDER"] == 'virtualbox'
+                node.vm.network "private_network", type: "dhcp", name: "vboxnet0"
+            end
+            node.vm.network "forwarded_port", guest: 22, host: "#{j + 10126}", auto_correct: true, id: "ssh"
+            node.vm.hostname = "k8s-node-#{j}"
+            node.vm.provision "ansible" do |ansible|
+                ansible.limit = "all"
+                ansible.playbook = "playbooks/node-playbook.yml"
+                ansible.extra_vars = {
+                    host_name: "k8s-node-#{j}"
+                }
+            end
+        end
+     end
+end

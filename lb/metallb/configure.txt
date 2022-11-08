@@ -1,0 +1,3 @@
+git clone https://github.com/metallb/metallb.git 
+k apply -f ../metallb/manifests/namespace.yaml   
+k apply -f ../metallb/manifests/metallb.yaml 

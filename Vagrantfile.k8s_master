@@ -1,0 +1,53 @@
+PROVIDER = ENV["PROVIDER"]
+ENV['VAGRANT_DEFAULT_PROVIDER'] = PROVIDER 
+
+IMAGE_NAME = "generic/ubuntu2204"
+M = ENV["N_CPND"].to_i
+
+Vagrant.configure("2") do |config|
+    config.ssh.insert_key = false
+    config.ssh.username = "vagrant"
+    config.ssh.private_key_path = ["~/.ssh/vindpro_local","~/.vagrant.d/insecure_private_key"]
+    config.ssh.forward_agent = true
+    config.vm.provision "shell" do |s|
+        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/vindpro_local.pub").first.strip
+        if ENV["PROVIDER"] == 'virtualbox'
+            s.inline = <<-SHELL
+            echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+            echo #{ssh_pub_key} >> /root/.ssh/authorized_keys
+            SHELL
+        else
+            s.inline = <<-SHELL
+            echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+            SHELL
+        end
+      end
+    
+    ##Managment network for libvirt always use eth0  
+    (1..M).each do |i|
+        config.vm.define "k8s-master-#{i}" do |master|
+            master.vm.box = IMAGE_NAME
+            master.vm.provider :PROVIDER do |v|
+                v.memory = 2048
+                v.cpus = 1
+                if ENV["PROVIDER"] == 'libvirt'
+                    v.management_network_name = "vagrant-libvirt"
+                elsif ENV["PROVIDER"] == 'virtualbox'
+                    v.management_network_name = "vboxnet0"
+                end
+            end
+            if ENV["PROVIDER"] == 'virtualbox'
+                master.vm.network "private_network", type: "dhcp", name: "vboxnet0"
+            end
+            master.vm.network "forwarded_port", guest: 22, host: "#{i + 10122}", auto_correct: true, id: "ssh"
+            master.vm.hostname = "k8s-master-#{i}"
+            master.vm.provision "ansible" do |ansible|
+                ansible.playbook = "playbooks/master-playbook.yml"
+                #ansible.groups = ansible_groups
+                ansible.extra_vars = {
+                    host_name: "k8s-master-#{i}"
+                }
+            end
+        end
+    end
+end

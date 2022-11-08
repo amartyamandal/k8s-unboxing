@@ -1,0 +1,24 @@
+---
+- hosts: "{{ host_name }}"
+  become: true
+  tasks:
+    - name: Updating hostname 
+      command: "{{ item }}"
+      with_items:
+      - hostnamectl set-hostname {{ host_name }}
+
+    - name: Install Simple WebServer
+      command: "{{ item }}"
+      with_items:
+      - apt-get update
+      - apt install net-tools -y
+      - apt-get install webfs 
+      - service webfs start
+      - mkdir -p /var/www/html
+      - chown -R vagrant:vagrant /var/www/html
+
+    - name: Create simple index.html page
+      copy:
+        dest: "/var/www/html/index.html"
+        content: |
+          Hello from {{ host_name }}

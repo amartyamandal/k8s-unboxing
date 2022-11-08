@@ -1,0 +1,13 @@
+.vagrant
+.vagrant_k8s_lb
+.vagrant_k8s_master
+.vagrant_k8s_node
+certs
+.tmp
+kubeconfig
+script_test.sh
+cni/calico/calicoctl
+cni/calico/configure.txt
+cni/plugins
+tmp.json
+script/smoke-test-local.sh

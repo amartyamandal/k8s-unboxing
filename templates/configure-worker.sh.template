@@ -1,0 +1,262 @@
+#!/bin/bash
+echo "install the OS dependencies"
+sudo sysctl net.ipv4.conf.all.forwarding=1
+sudo apt install socat conntrack ipset wget jq vim -y
+################################################
+echo "Disable Swap"
+sudo swapoff -a
+######################################################
+# echo "Download and Install Worker Binaries"
+# wget -q --show-progress --https-only --timestamping https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz 
+##################################################
+echo "Create the installation directories"
+sudo mkdir -p \
+  /etc/cni/net.d \
+  /opt/cni/bin \
+  /var/lib/kubelet \
+  /var/lib/kube-proxy \
+  /var/lib/kubernetes \
+  /var/run/kubernetes
+######################################################
+echo "Install the worker binaries:"
+
+#mv contd_@CONTD_V@ containerd
+sudo mv containerd/* /bin/
+
+#sudo tar -xvf cni-plugins-linux-amd64-v1.1.1.tgz -C /opt/cni/bin/
+sudo mv cni_plugin/* /opt/cni/bin/
+chmod +x crictl kubectl kube-proxy kubelet runc 
+sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
+
+###############################################
+if [ "@k8s_cni@" = "default" ]
+then
+  echo "Configure CNI Networking for basic routing"
+  POD_CIDR=$(cat $HOME/pod_cidr.txt)
+
+cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
+{
+    "cniVersion": "0.4.0",
+    "name": "bridge",
+    "type": "bridge",
+    "bridge": "cnio0",
+    "isGateway": true,
+    "ipMasq": true,
+    "ipam": {
+        "type": "host-local",
+        "ranges": [
+          [{"subnet": "${POD_CIDR}"}]
+        ],
+        "routes": [{"dst": "0.0.0.0/0"}]
+    }
+}
+EOF
+cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
+{
+    "cniVersion": "0.4.0",
+    "name": "lo",
+    "type": "loopback"
+}
+EOF
+fi
+######################################################
+#"io.containerd.runtime.v1.linux"
+# io.containerd.runc.v2"
+# runtime_engine = "/usr/local/bin/runc"
+#######hack to resolve  "cgroup mountpoint does not exist" issue##########
+# sudo mkdir /sys/fs/cgroup/systemd
+# sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+##########################################################################
+echo "Configure containerd"
+sudo mkdir -p /etc/containerd/
+
+cat << EOF | sudo tee /etc/containerd/config.toml
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri".containerd]
+    snapshotter = "overlayfs"
+    default_runtime_name = "runc"
+    no_pivot = false
+    disable_snapshot_annotations = true
+    discard_unpacked_layers = false
+    [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
+      runtime_type = ""
+      runtime_engine = ""
+      runtime_root = ""
+      privileged_without_host_devices = false
+      base_runtime_spec = ""
+    [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
+      runtime_type = ""
+      runtime_engine = ""
+      runtime_root = ""
+      privileged_without_host_devices = false
+      base_runtime_spec = ""
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+        runtime_type = "io.containerd.runc.v2"
+        runtime_engine = ""
+        runtime_root = ""
+        privileged_without_host_devices = false
+        base_runtime_spec = ""
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+      [plugins."io.containerd.grpc.v1.cri".cni]
+        bin_dir = "/opt/cni/bin"
+        conf_dir = "/etc/cni/net.d"
+        max_conf_num = 1
+        conf_template = ""
+      [plugins."io.containerd.runtime.v1.linux"]
+        shim = "containerd-shim"
+        runtime = "runc"
+        runtime_root = ""
+        no_shim = false
+        shim_debug = false
+      [plugins."io.containerd.runtime.v2.task"]
+        platforms = ["linux/amd64"]
+      [plugins."io.containerd.service.v1.diff-service"]
+        default = ["walking"]
+      [plugins."io.containerd.snapshotter.v1.devmapper"]
+        root_path = ""
+        pool_name = ""
+        base_image_size = ""
+        async_remove = false
+EOF
+####################################################
+echo "Create the containerd.service systemd unit file"
+cat <<EOF | sudo tee /etc/systemd/system/containerd.service
+[Unit]
+Description=containerd container runtime
+Documentation=https://containerd.io
+After=network.target
+
+[Service]
+ExecStartPre=/sbin/modprobe overlay
+ExecStart=/bin/containerd
+Restart=always
+RestartSec=5
+Delegate=yes
+KillMode=process
+OOMScoreAdjust=-999
+LimitNOFILE=1048576
+LimitNPROC=infinity
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target
+EOF
+#######################################################
+echo "Configure the Kubelet"
+MACHINE_NAME=$(echo ${HOSTNAME} | cut -d"." -f1)
+sudo cp certs/${MACHINE_NAME}-key.pem certs/${MACHINE_NAME}.pem /var/lib/kubelet/
+sudo cp kubeconfigs/${MACHINE_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
+sudo cp certs/ca.pem /var/lib/kubernetes/
+##########################################################
+echo "Create the kubelet-config.yaml configuration file"
+if [ "@k8s_cni@" = "default" ]
+then
+cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+  x509:
+    clientCAFile: "/var/lib/kubernetes/ca.pem"
+authorization:
+  mode: Webhook
+clusterDomain: "cluster.local"
+clusterDNS:
+  - "10.32.0.10"
+podCIDR: "${POD_CIDR}"
+resolvConf: "/run/systemd/resolve/resolv.conf"
+runtimeRequestTimeout: "15m"
+tlsCertFile: "/var/lib/kubelet/${MACHINE_NAME}.pem"
+tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
+EOF
+else
+cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+  x509:
+    clientCAFile: "/var/lib/kubernetes/ca.pem"
+authorization:
+  mode: Webhook
+clusterDomain: "cluster.local"
+clusterDNS:
+  - "10.32.0.10"
+resolvConf: "/run/systemd/resolve/resolv.conf"
+runtimeRequestTimeout: "15m"
+tlsCertFile: "/var/lib/kubelet/${MACHINE_NAME}.pem"
+tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
+EOF
+fi
+############################################################
+echo "Create the kubelet.service systemd unit file"
+cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/kubernetes/kubernetes
+After=containerd.service
+Requires=containerd.service
+
+[Service]
+ExecStart=/usr/local/bin/kubelet \\
+  --config=/var/lib/kubelet/kubelet-config.yaml \\
+  --container-runtime=remote \\
+  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
+  --image-pull-progress-deadline=2m \\
+  --kubeconfig=/var/lib/kubelet/kubeconfig \\
+  --network-plugin=cni \\
+  --register-node=true \\
+  --fail-swap-on=false \\
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+####################################################
+echo "Configure the Kubernetes Proxy"
+sudo cp kubeconfigs/kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig
+####################################################
+echo "Create the kube-proxy-config.yaml configuration file"
+cat <<EOF | sudo tee /var/lib/kube-proxy/kube-proxy-config.yaml
+kind: KubeProxyConfiguration
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+clientConnection:
+  kubeconfig: "/var/lib/kube-proxy/kubeconfig"
+mode: "iptables"
+clusterCIDR: "10.200.0.0/16"
+EOF
+########################################################
+echo "Create the kube-proxy.service systemd unit file"
+cat <<EOF | sudo tee /etc/systemd/system/kube-proxy.service
+[Unit]
+Description=Kubernetes Kube Proxy
+Documentation=https://github.com/kubernetes/kubernetes
+
+[Service]
+ExecStart=/usr/local/bin/kube-proxy \\
+  --config=/var/lib/kube-proxy/kube-proxy-config.yaml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+echo "Start the Worker Services"
+sudo systemctl daemon-reload
+sudo systemctl enable containerd kubelet kube-proxy --now
+sudo systemctl start containerd kubelet kube-proxy
+
+sudo systemctl restart containerd kubelet kube-proxy
+#kubectl get nodes --kubeconfig admin.kubeconfig
+#sudo journalctl -u containerd --since today --no-pager --follow
+#sudo systemctl restart containerd kubelet kube-proxy
+#sudo systemctl status containerd kubelet kube-proxy

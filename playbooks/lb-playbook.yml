@@ -1,0 +1,17 @@
+---
+- hosts: "{{ host_name }}"
+  become: true
+
+  tasks:
+    - name: Updating hostname 
+      command: "{{ item }}"
+      with_items:
+      - hostnamectl set-hostname {{ host_name }}
+      - apt install net-tools -y
+
+    - name: "Installing haproxy"
+      package:
+        name: "haproxy"
+        state: present
+
+  

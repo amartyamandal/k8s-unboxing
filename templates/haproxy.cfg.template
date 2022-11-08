@@ -1,0 +1,55 @@
+global
+    log          127.0.0.1 local2
+    chroot       /var/lib/haproxy
+    pidfile      /var/run/haproxy.pid
+    maxconn      4000
+    user         haproxy
+    group        haproxy
+    stats socket /var/lib/haproxy/stats
+    daemon
+
+defaults
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option                  http-server-close
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+listen stats
+    bind *:9000
+    stats enable
+    stats realm Haproxy\ Statistics
+    stats uri /haproxy_stats
+    stats auth admin:password
+    stats refresh 30
+    mode  http
+
+frontend kubernetes
+    bind k8s-lb-ip:6443
+    default_backend kubernetes-master-nodes
+    option tcplog
+
+backend kubernetes-master-nodes
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    @MS_NDS@
+
+frontend test
+    bind k8s-lb-ip:8081
+    mode http
+    default_backend  app
+
+backend app
+    balance     roundrobin
+    mode http
+    @APPS@

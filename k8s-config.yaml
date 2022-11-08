@@ -1,0 +1,26 @@
+## global definitions
+k8s:
+  provider: "virtualbox"
+  domain: "vindpro.de"
+  ip_start: 192.168.121.128
+  ip_end: 192.168.121.254
+  ncpnd: 1
+  nwrknd: 2
+  cni: "default"
+  V: 1.22
+  CRI_CTL_V: 1.25
+  RUNC_V: 1.1
+  CONTD_V: 1.6
+  CNI_PLUGIN_V: 1.1
+  build_directory: "/home/vindpro/github/k8s_build_lab"
+node:
+  cp:
+    cpu: 1
+    mem: 2048
+  wrk:
+    cpu: 2
+    mem: 2048
+  lb:
+    cpu: 1
+    mem: 2048
+
