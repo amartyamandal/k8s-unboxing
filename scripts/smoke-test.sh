@@ -8,7 +8,7 @@ kubectl exec -ti $POD_NAME -- nslookup kubernetes
 kubectl create secret generic kubernetes-the-hard-way \
   --from-literal="mykey=mydata"
 
-ssh-keygen -f "<path to ssh directory>/.ssh/known_hosts" -R "k8s-master-1.vindpro.de"
+ssh-keygen -f "<path to ssh directory>/.ssh/known_hosts" -R "k8s-master-1.<domain name>"
 
 ssh -i ~/.ssh/<ssh cert> vagrant@k8s-master-1.<domain name> -oStrictHostKeyChecking=no 'exit'
 
