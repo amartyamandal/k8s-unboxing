@@ -11,3 +11,4 @@ cni/calico/configure.txt
 cni/plugins
 temp.json
 script/smoke-test-local.sh
+run.sh
