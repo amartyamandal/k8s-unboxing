@@ -13,14 +13,4 @@ k8s:
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
   build_directory: "/home/vindpro/github/k8s_build_lab"
-node:
-  cp:
-    cpu: 1
-    mem: 2048
-  wrk:
-    cpu: 2
-    mem: 2048
-  lb:
-    cpu: 1
-    mem: 2048
 
