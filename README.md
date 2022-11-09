@@ -20,9 +20,9 @@ Once download first thing you would like to do is to update k8s-config.yaml
 #   RUNC_V: 1.1                     ## runc version ###############################################################
 #   CONTD_V: 1.6                    ## containerd version #########################################################
 #   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
-#   build_directory: "<path>"       ## path to the directory where you downloaded & build all k8s related source ## 
+#   build_directory: "path"       ## path to the directory where you downloaded & build all k8s related source ## 
 # node:                             ## any node attrebutes can be configured here #################################      
-#   private_key_name: "<ssh_key>"   ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
+#   private_key_name: "ssh_key"   ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
 
 k8s:
   provider: "libvirt"
@@ -39,7 +39,7 @@ k8s:
   CNI_PLUGIN_V: 1.1
   build_directory: "<path>"
 node:
-  private_key_name: "<ssh_key>"
+  private_key_name: "ssh_key"
   os: "generic/ubuntu2204"
 </code></pre>
 Github repo documentation still a work in progress and grow along with this series and will bring more clarity, it's only bash scripts (other than one exception of ansible, just to keep an entry point for future enhancement), using only bash is intentional, code is very much straight forward easy to understand and change and that is the primary objectives.
