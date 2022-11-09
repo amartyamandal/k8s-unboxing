@@ -12,5 +12,3 @@ cni/plugins
 temp.json
 script/smoke-test-local.sh
 run.sh
-k8s-config.yaml
-templates/hosts.template
