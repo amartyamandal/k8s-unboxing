@@ -57,7 +57,14 @@ following table would be helpful-
 | ./setup.sh del wrk | Only remove the worker nodes, so that you can redeploy the worker nodes with changes you made, keeping the control plane intact |
 
 FYI- "build" for the first time will take some time mostly to build k8s binaries, do check "build-k8s.sh" under scripts directory for the build command and you are free to make changes according to your environment
- ![](RackMultipart20221109-1-no568q_html_e63ac52501a6cd39.png)
+ <pre><code>
+    sudo build/run.sh make kube-apiserver KUBE_BUILD_PLATFORMS=linux/amd64
+    sudo build/run.sh make kube-controller-manager KUBE_BUILD_PLATFORMS=linux/amd64
+    sudo build/run.sh make kube-scheduler KUBE_BUILD_PLATFORMS=linux/amd64
+    sudo build/run.sh make kubectl KUBE_BUILD_PLATFORMS=linux/amd64
+    sudo build/run.sh make kube-proxy KUBE_BUILD_PLATFORMS=linux/amd64
+    sudo build/run.sh make kubelet KUBE_BUILD_PLATFORMS=linux/amd64
+</code></pre>
 
 Building containerd may have some complain around libseccomp and you may download compile build the same with following commands
 
