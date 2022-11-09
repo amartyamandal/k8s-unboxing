@@ -3,11 +3,45 @@ Generally I use kvm in my home lab, poor man's hypervisor. You need some sort of
 
 Purpose of this very first blog of this series is to introduce the following collection of scripts which let you create a k8s cluster with an api load balancer with both libvirt (kvm) and virtualbox.
 
-You can find the source here [https://github.com/amartyamandal/k8s-unboxing](https://github.com/amartyamandal/k8s-unboxing).
-
 Once download first thing you would like to do is to update k8s-config.yaml
 
+<pre><code>
+## global definitions
+# k8s:
+#   provider: 'libvirt'             ## two options 'libvirt' or 'virtualbox'#######################################
+#   domain: 'k8s.local'
+#   ip_start: 192.168.121.128       ## This is required for libvirt provider to create a subnet ###################
+#   ip_end: 192.168.121.254         ## for virtualbox its use the default vboxnet0 ################################
+#   ncpnd: 1                        ## number of master nodes, load balancer will balanced the traffic to kubeapi##
+#   nwrknd: 2                       ## number of worker nodes #####################################################
+#   cni: "default"                  ## 3 options 'default'(simple routing & no 3rd party CNI),'calico','cilium' ###
+#   V: 1.22                         ## k8s version ################################################################
+#   CRI_CTL_V: 1.25                 ## CRI version ################################################################
+#   RUNC_V: 1.1                     ## runc version ###############################################################
+#   CONTD_V: 1.6                    ## containerd version #########################################################
+#   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
+#   build_directory: "<path>"       ## path to the directory where you downloaded & build all k8s related source ## 
+# node:                             ## any node attrebutes can be configured here #################################      
+#   private_key_name: "<ssh_key>"   ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
 
+k8s:
+  provider: "libvirt"
+  domain: "<domain>"
+  ip_start: 192.168.121.128
+  ip_end: 192.168.121.254
+  ncpnd: 1
+  nwrknd: 2
+  cni: "default"
+  V: 1.22
+  CRI_CTL_V: 1.25
+  RUNC_V: 1.1
+  CONTD_V: 1.6
+  CNI_PLUGIN_V: 1.1
+  build_directory: "<path>"
+node:
+  private_key_name: "<ssh_key>"
+  os: "generic/ubuntu2204"
+</code></pre>
 Github repo documentation still a work in progress and grow along with this series and will bring more clarity, it's only bash scripts (other than one exception of ansible, just to keep an entry point for future enhancement), using only bash is intentional, code is very much straight forward easy to understand and change and that is the primary objectives.
 
 following table would be helpful-
