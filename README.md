@@ -35,7 +35,7 @@ Few things to remember before using this repo.
 2. This is not any tool or has no intention to become one, in fact its opposites, its whole purpose is to unwrap installation and configuration of a cluster in its full glory
 3. This is no way optimized for time (it takes to build a cluster) or efficiency (I purposefully avoided using ansible or any sorts of cm), it's expressive and fragile.
 4. I have ansible provisioner with vagrant, but use has been kept very limited, its mostly collection of few bash script and that is intentional
-5. Pre-requisites
+* Pre-requisites
   * I use ubuntu for my development machine, it should also work in a debian distribution
   * [Go](https://www.fosslinux.com/68795/install-go-on-ubuntu.htm)
   * [Kvm](https://www.fosslinux.com/68795/install-go-on-ubuntu.htm) or [virtualbox](https://linuxhint.com/install-virtualbox-linux/)- 
