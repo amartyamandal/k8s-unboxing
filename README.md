@@ -93,4 +93,5 @@ Few things to remember before using this repo.
   * Cilium command line if you are using cilium, but my suggestions would be to start with default
   * If anything else, rest assured deployment will certainly break and let you know what is wrong :-)
   * It will ask for "sudo", you are welcome to check the code before you go with it, nothing harmful though
+  * ansible
 
