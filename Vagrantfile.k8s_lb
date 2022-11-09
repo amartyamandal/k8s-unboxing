@@ -1,7 +1,7 @@
 PROVIDER = ENV["PROVIDER"]
 ENV['VAGRANT_DEFAULT_PROVIDER'] = PROVIDER 
 SSHKEY = ENV["SSHKEY"]
-IMAGE_NAME = "generic/ubuntu2204"
+IMAGE_NAME = ENV["IMAGE_NAME"]
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
