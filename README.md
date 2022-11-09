@@ -94,4 +94,5 @@ Few things to remember before using this repo.
   * If anything else, rest assured deployment will certainly break and let you know what is wrong :-)
   * It will ask for "sudo", you are welcome to check the code before you go with it, nothing harmful though
   * ansible
+FYI - it doese update your /etc/hosts, but before that it keeps a backup.
 
