@@ -50,11 +50,11 @@ following table would be helpful
 |<pre><code>./setup.sh make </code></pre>| Download source code for Kubernetes, Cri-tools, runc, containerd & cni plugins. |
 | ./setup.sh build | Build Kubernetes, Cri-tools, runc, containerd & cni plugins and copy to the main project tmp folder, so that any changes made to any of this source is readily available for testing.|
 ||**NOTE:** etcd is the only binary which is getting downloaded and not getting build locally|
-| ./setup.sh all | Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
-| ./setup.sh cp | Only creates the control plane |
-| ./setup.sh wrk | If control plane exists creates worker nodes and configure the same |
-| ./setup.sh del | Destroy entire cluster |
-| ./setup.sh del wrk | Only remove the worker nodes, so that you can redeploy the worker nodes with changes you made, keeping the control plane intact |
+| <pre><code>./setup.sh all</code></pre> | Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
+| <pre><code>./setup.sh cp</code></pre> | Only creates the control plane |
+| <pre><code>./setup.sh wrk</code></pre> | If control plane exists creates worker nodes and configure the same |
+| <pre><code>./setup.sh del</code></pre> | Destroy entire cluster |
+| <pre><code>./setup.sh del wrk</code></pre> | Only remove the worker nodes, so that you can redeploy the worker nodes with changes you made, keeping the control plane intact |
 
 FYI- "build" for the first time will take some time mostly to build k8s binaries, do check "build-k8s.sh" under scripts directory for the build command and you are free to make changes according to your environment
  <pre><code>
