@@ -22,7 +22,7 @@ Once download first thing you would like to do is to update k8s-config.yaml
 #   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
 #   build_directory: "path"         ## path to the directory where you downloaded & build all k8s related source ## 
 # node:                             ## any node attrebutes can be configured here #################################      
-#   private_key_name: "ssh_key"   ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
+#   private_key_name: "ssh_key"     ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
 
 k8s:
   provider: "libvirt"
@@ -101,9 +101,9 @@ in case you have customization in your existing host file just replace the hosts
 
 <pre><code>
 127.0.0.1       localhost
-**@CPHOSTS@**
-**k8s-lb-ip k8s-lb.@DOMAIN@**
-**@WRKHOSTS@**
+***@CPHOSTS@***
+***k8s-lb-ip k8s-lb.@DOMAIN@***
+***@WRKHOSTS@***
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
