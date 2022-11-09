@@ -36,12 +36,13 @@ Few things to remember before using this repo.
 3. This is no way optimized for time (it takes to build a cluster) or efficiency (I purposefully avoided using ansible or any sorts of cm), it's expressive and fragile.
 4. I have ansible provisioner with vagrant, but use has been kept very limited, its mostly collection of few bash script and that is intentional
 5. Pre-requisites
-  1. I use ubuntu for my development machine, it should also work in a debian distribution
-  2. [Go](https://www.fosslinux.com/68795/install-go-on-ubuntu.htm)
-  3. [Kvm](https://www.fosslinux.com/68795/install-go-on-ubuntu.htm) or [virtualbox](https://linuxhint.com/install-virtualbox-linux/)- I should warn kvm is much much faster, reason is obvious kvm is type 1 hypervisor
-  4. [Vagrant](https://linuxhint.com/install-vagrant-ubuntu/), vagrant virtualbox provider and [libvirt providers](https://computingforgeeks.com/using-vagrant-with-libvirt-on-linux/)
-  5. Virsh and Vboxmanage command lines, which should be installed once you configured libvirt and virtualbox
-  6. Cilium command line if you are using cilium, but my suggestions would be to start with default
-  7. If anything else, rest assured deployment will certainly break and let you know what is wrong :-)
-  8. It will ask for "sudo", you are welcome to check the code before you go with it, nothing harmful though
+  * I use ubuntu for my development machine, it should also work in a debian distribution
+  * [Go](https://www.fosslinux.com/68795/install-go-on-ubuntu.htm)
+  * [Kvm](https://www.fosslinux.com/68795/install-go-on-ubuntu.htm) or [virtualbox](https://linuxhint.com/install-virtualbox-linux/)- 
+    I should warn kvm is much much faster, reason is obvious kvm is type 1 hypervisor
+  * [Vagrant](https://linuxhint.com/install-vagrant-ubuntu/), vagrant virtualbox provider and [libvirt providers](https://computingforgeeks.com/using-vagrant-with-libvirt-on-linux/)
+  * Virsh and Vboxmanage command lines, which should be installed once you configured libvirt and virtualbox
+  * Cilium command line if you are using cilium, but my suggestions would be to start with default
+  * If anything else, rest assured deployment will certainly break and let you know what is wrong :-)
+  * It will ask for "sudo", you are welcome to check the code before you go with it, nothing harmful though
 
