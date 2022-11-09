@@ -89,7 +89,7 @@ Few things to remember before using this repo.
   * [Kvm](https://www.fosslinux.com/68795/install-go-on-ubuntu.htm) or [virtualbox](https://linuxhint.com/install-virtualbox-linux/)- 
     I should warn kvm is much much faster, reason is obvious kvm is type 1 hypervisor
   * [Vagrant](https://linuxhint.com/install-vagrant-ubuntu/), vagrant virtualbox provider and [libvirt providers](https://computingforgeeks.com/using-vagrant-with-libvirt-on-linux/)
-  * Virsh and Vboxmanage command lines, which should be installed once you configured libvirt and virtualbox
+  * Virsh and Vboxmanage command lines, which should be installed once you configured kvm and virtualbox
   * Cilium command line if you are using cilium, but my suggestions would be to start with default
   * If anything else, rest assured deployment will certainly break and let you know what is wrong :-)
   * It will ask for "sudo", you are welcome to check the code before you go with it, nothing harmful though
