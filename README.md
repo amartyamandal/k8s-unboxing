@@ -1,7 +1,7 @@
 # k8s-unboxing
 Generally I use kvm in my home lab, poor man's hypervisor. You need some sort of automation so that you can quickly change, build, destroy & redo a cluster whenever you want in the cheapest way possible.
 
-Purpose of this very first blog of this series is to introduce the following collection of scripts which let you create a k8s cluster with an api load balancer with both libvirt (kvm) and virtualbox.
+Purpose of this collection of scripts is to let you create a k8s cluster with an api load balancer with both libvirt (kvm) and virtualbox.
 
 Once download first thing you would like to do is to update k8s-config.yaml
 
