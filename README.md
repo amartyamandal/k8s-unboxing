@@ -101,10 +101,11 @@ in case you have customization in your existing host file just replace the hosts
 
 <pre><code>
 127.0.0.1       localhost
-***@CPHOSTS@***
-***k8s-lb-ip k8s-lb.@DOMAIN@***
-***@WRKHOSTS@***
-
+</code></pre>
+**`@CPHOSTS@`**   
+**`k8s-lb-ip k8s-lb.@DOMAIN@`**  
+**`@WRKHOSTS@`**
+<pre><code>
 # The following lines are desirable for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
 fe00::0 ip6-localnet
