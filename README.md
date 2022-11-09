@@ -47,7 +47,7 @@ Github repo documentation still a work in progress and grow along with this seri
 following table would be helpful-
 
 | ./setup.sh make | Download source code for Kubernetes, Cri-tools, runc, containerd & cni plugins. |
-| --- | --- |
+| --- | |
 | ./setup.sh build | Build Kubernetes, Cri-tools, runc, containerd & cni plugins and copy to the main project tmp folder, so that any changes made to any of this source is readily available for testing.|
 ||**NOTE:** etcd is the only binary which is getting downloaded and not getting build locally|
 | ./setup.sh all | Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
