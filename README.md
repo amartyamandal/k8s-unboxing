@@ -67,6 +67,13 @@ FYI- "build" for the first time will take some time mostly to build k8s binaries
 </code></pre>
 
 Building containerd may have some complain around libseccomp and you may download compile build the same with following commands
+<pre><code>git clone https://github.com/seccomp/libseccomp
+git checkouot release-2.5
+./autogen.sh
+./configure
+make install
+make check
+</code></pre>
 
 Sometimes changing virtualization providers from virtualbox to libvirt causes some trouble simply restart libvirtd and remove stale images.
 
