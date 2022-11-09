@@ -1,5 +1,5 @@
 #!/bin/bash
-
+##adding a comment
 project_path=$(eval pwd)
 #k8s_build_directory=../k8s_build_lab
 
