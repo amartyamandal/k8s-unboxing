@@ -20,7 +20,7 @@ Once download first thing you would like to do is to update k8s-config.yaml
 #   RUNC_V: 1.1                     ## runc version ###############################################################
 #   CONTD_V: 1.6                    ## containerd version #########################################################
 #   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
-#   build_directory: "path"       ## path to the directory where you downloaded & build all k8s related source ## 
+#   build_directory: "path"         ## path to the directory where you downloaded & build all k8s related source ## 
 # node:                             ## any node attrebutes can be configured here #################################      
 #   private_key_name: "ssh_key"   ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
 
@@ -96,4 +96,19 @@ Few things to remember before using this repo.
   * ansible
 
 WARNING!! - it doese update your /etc/hosts, but before that it keeps a backup.You can switch it off though
+There are two templates for hosts under folder "templates" one for the guest (hosts.node.template) and otherone for the host.
+in case you have customization in your existing host file just replace the hosts.template (which is for host) and just update with following bold placeholders
 
+<pre><code>
+127.0.0.1       localhost
+**@CPHOSTS@**
+**k8s-lb-ip k8s-lb.@DOMAIN@**
+**@WRKHOSTS@**
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+</code></pre>
