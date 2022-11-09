@@ -1,7 +1,7 @@
 ## global definitions
 k8s:
   provider: "libvirt"
-  domain: "local.de"
+  domain: "vindpro.de"
   ip_start: 192.168.121.128
   ip_end: 192.168.121.254
   ncpnd: 1
@@ -12,7 +12,7 @@ k8s:
   RUNC_V: 1.1
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
-  build_directory: "<Path-to-the-directory-to-download-and-build-all-the-os-source-code>"
+  build_directory: "/home/vindpro/github/k8s_build_lab"
 node:
-  private_key_name: "<aah pvt key name>"
+  private_key_name: "vindpro_local"
 
