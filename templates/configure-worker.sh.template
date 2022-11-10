@@ -185,6 +185,9 @@ tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
 EOF
 fi
 ############################################################
+# --network-plugin=cni \\
+# --image-pull-progress-deadline=2m \\
+# --container-runtime=remote \\
 echo "Create the kubelet.service systemd unit file"
 cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
 [Unit]
@@ -196,11 +199,8 @@ Requires=containerd.service
 [Service]
 ExecStart=/usr/local/bin/kubelet \\
   --config=/var/lib/kubelet/kubelet-config.yaml \\
-  --container-runtime=remote \\
   --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
-  --image-pull-progress-deadline=2m \\
   --kubeconfig=/var/lib/kubelet/kubeconfig \\
-  --network-plugin=cni \\
   --register-node=true \\
   --fail-swap-on=false \\
   --v=2
@@ -246,6 +246,6 @@ sudo systemctl start containerd kubelet kube-proxy
 
 sudo systemctl restart containerd kubelet kube-proxy
 #kubectl get nodes --kubeconfig admin.kubeconfig
-#sudo journalctl -u containerd --since today --no-pager --follow
+#sudo journalctl -u kubelet --since today --no-pager --follow
 #sudo systemctl restart containerd kubelet kube-proxy
 #sudo systemctl status containerd kubelet kube-proxy

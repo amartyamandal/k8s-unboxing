@@ -16,7 +16,7 @@ sudo sed -i "s/@CPHOSTS@/$CPHOSTS/g" /etc/hosts
 sudo sed -i "s/@DOMAIN@/$k8s_domain/g" /etc/hosts
 
 sudo sed -i "s/@CPHOSTS@/$CPHOSTS/g" .tmp/hosts.node
-sudo sed -i "s/@DOMAIN@/$k8s_domain/g" /etc/hosts.node
+sudo sed -i "s/@DOMAIN@/$k8s_domain/g" .tmp/hosts.node
 
 
 INTERNAL_LB_IP="$(getIP 'lb')"

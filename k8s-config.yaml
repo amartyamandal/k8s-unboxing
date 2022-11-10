@@ -18,19 +18,19 @@
 
 k8s:
   provider: "libvirt"
-  domain: "<domain>"
+  domain: "k8s.local"
   ip_start: 192.168.121.128
   ip_end: 192.168.121.254
   ncpnd: 1
   nwrknd: 2
   cni: "default"
-  V: 1.22
+  V: 1.25
   CRI_CTL_V: 1.25
   RUNC_V: 1.1
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
-  build_directory: "<path>"
+  build_directory: "/home/vindpro/home_projects/k8s_build_lab"
 node:
-  private_key_name: "<ssh_key>"
+  private_key_name: "vindpro_local"
   os: "generic/ubuntu2204"
 
