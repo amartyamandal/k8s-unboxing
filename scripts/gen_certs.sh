@@ -63,7 +63,7 @@ cat > certs/admin/admin-csr.json <<EOF
       "C": "CAN",
       "L": "Toronto",
       "O": "system:masters",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "k8s unboxing",
       "ST": "Ontario"
     }
   ]
@@ -95,7 +95,7 @@ cat > certs/kubecntrl/kube-controller-manager-csr.json <<EOF
       "C": "CAN",
       "L": "Toronto",
       "O": "system:kube-controller-manager",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "k8s unboxing",
       "ST": "Ontario"
     }
   ]
@@ -128,7 +128,7 @@ cat > certs/kubprxy/kube-proxy-csr.json <<EOF
       "C": "CAN",
       "L": "Toronto",
       "O": "system:node-proxier",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "k8s unboxing",
       "ST": "Ontario"
     }
   ]
@@ -160,7 +160,7 @@ cat > certs/schedulerclient/kube-scheduler-csr.json <<EOF
       "C": "CAN",
       "L": "Toronto",
       "O": "system:kube-scheduler",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "k8s unboxing",
       "ST": "Ontario"
     }
   ]
@@ -191,7 +191,7 @@ cat > certs/svca/service-account-csr.json <<EOF
       "C": "CAN",
       "L": "Toronto",
       "O": "Kubernetes",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "k8s unboxing",
       "ST": "Ontario"
     }
   ]
@@ -241,7 +241,7 @@ cat > certs/apiserver/kubernetes-csr.json <<EOF
       "C": "CAN",
       "L": "Toronto",
       "O": "Kubernetes",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "k8s unboxing",
       "ST": "Ontario"
     }
   ]

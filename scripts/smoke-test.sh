@@ -4,7 +4,7 @@ kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
 POD_NAME=$(kubectl get pods -l run=busybox -o jsonpath="{.items[0].metadata.name}")
 kubectl exec -ti $POD_NAME -- nslookup kubernetes
 
-kubectl create secret generic kubernetes-the-hard-way \
+kubectl create secret generic k8s_unboxing \
   --from-literal="mykey=mydata"
 
 ssh-keygen -f "/home/vindpro/.ssh/known_hosts" -R "k8s-master-1.vindpro.de"
@@ -26,4 +26,4 @@ ssh -i ~/.ssh/vindpro_local vagrant@k8s-master-1.vindpro.de -- \
   --cacert=/etc/etcd/ca.pem \
   --cert=/etc/etcd/kubernetes.pem \
   --key=/etc/etcd/kubernetes-key.pem\
-  /registry/secrets/default/kubernetes-the-hard-way | hexdump -C"
+  /registry/secrets/default/k8s_unboxing | hexdump -C"

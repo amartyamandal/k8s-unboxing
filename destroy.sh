@@ -29,7 +29,7 @@ elif [[ $2 == wrk ]]
 then
     if [ $wrkndcount -gt 0 ]
     then
-        kubectl delete -f https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml
+        kubectl delete -f ./dns/coredns/coredns-1.8.yaml
         ciliumresource=$(kubectl get pod -A | grep cilium -c)
         if [ $ciliumresource -gt 0 ]
         then
