@@ -18,6 +18,7 @@ Once download first thing you would like to do is to update k8s-config.yaml
 #   V: 1.22                         ## k8s version ################################################################
 #   CRI_CTL_V: 1.25                 ## CRI version ################################################################
 #   RUNC_V: 1.1                     ## runc version ###############################################################
+#   CRUN_V: 1.7                     ## Any one entry will work either RUNC or CRUN
 #   CONTD_V: 1.6                    ## containerd version #########################################################
 #   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
 #   build_directory: "path"         ## path to the directory where you downloaded & build all k8s related source ## 
@@ -32,9 +33,10 @@ k8s:
   ncpnd: 1
   nwrknd: 2
   cni: "default"
-  V: 1.22
+  V: 1.25
   CRI_CTL_V: 1.25
   RUNC_V: 1.1
+  CRUN_V: 1.7
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
   build_directory: "<path>"
@@ -47,8 +49,8 @@ Github repo documentation still a work in progress and grow along with this seri
 following table would be helpful
 |command|usage|
 |-------|-----|
-|<pre><code>./setup.sh make </code></pre>| Download source code for Kubernetes, Cri-tools, runc, containerd & cni plugins. |
-| ./setup.sh build | Build Kubernetes, Cri-tools, runc, containerd & cni plugins and copy to the main project tmp folder, so that any changes made to any of this source is readily available for testing.|
+|<pre><code>./setup.sh make</code></pre>| Download source code for Kubernetes, Cri-tools, runc, containerd & cni plugins. |
+|<pre><code>./setup.sh build</code></pre>| Build Kubernetes, Cri-tools, runc, containerd & cni plugins and copy to the main project tmp folder, so that any changes made to any of this source is readily available for testing.|
 ||**NOTE:** etcd is the only binary which is getting downloaded and not getting build locally|
 | <pre><code>./setup.sh all</code></pre> | Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
 | <pre><code>./setup.sh cp</code></pre> | Only creates the control plane |
