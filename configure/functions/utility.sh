@@ -60,7 +60,6 @@ function getIP() {
 }
 ####################################################
 function parse_yaml {
-   #printf "#!/bin/bash\n\n"
    #printf "function declare_k8s_env {\n"
    local prefix=$2
    local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
@@ -78,6 +77,100 @@ function parse_yaml {
       }
    }'
    #printf "}"
+}
+####################################################
+function validate_yaml_input {
+    if [ -z "${k8s_provider// }" ]
+    then
+        echo "k8s version not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_domain// }" ]
+    then
+        echo "domain value not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_ip_start// }" ]
+    then
+        echo "ip_start value not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_ip_end// }" ]
+    then
+        echo "ip_end value not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_ncpnd// }" ]
+    then
+        echo "control plane number of nodes not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_nwrknd// }" ]
+    then
+        echo "Number of worker nodes not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_cni// }" ]
+    then
+        echo "CNI option not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_V// }" ]
+    then
+        echo "k8s version not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_CRI_CTL_V// }" ]
+    then
+        echo "CRI tool version not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_RUNC_V// }" ]
+    then
+        if [ -z "${k8s_CRUN_V// }" ]
+        then
+            echo "runc version not supplied"
+            exit 1
+        fi
+    fi
+    if [ -z "${k8s_CONTD_V// }" ]
+    then
+        echo "containerd version not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_CNI_PLUGIN_V// }" ]
+    then
+        echo "cni plugin version not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_build_directory// }" ]
+    then
+        echo "k8 build directory path not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_CRUN_V// }" ]
+    then
+        if [ -z "${k8s_RUNC_V// }" ]
+        then
+            echo "crun version not supplied"
+            exit 1
+        fi
+    fi
+    if [ -z "${node_private_key_name// }" ]
+    then
+        echo "node_private_key_name value not supplied"
+        exit 1
+    fi
+    if [ -z "${node_os// }" ]
+    then
+        echo "node_os value not supplied"
+        exit 1
+    fi
+    if [ ${#k8s_CRUN_V} -gt 0 ] && [ ${#k8s_RUNC_V} -gt 0 ]
+    then
+        echo "Only keep one runc option either runc or crun, remove one"
+        exit 1
+    fi
 }
 ######################################################
 #$1=type

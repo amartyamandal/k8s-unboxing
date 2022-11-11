@@ -11,8 +11,6 @@ else
 	mkdir .tmp
 fi
 
-echo $k8s_build_directory
-
 if [ -d $k8s_build_directory ];
 then
 	echo "k8s build directory exists"
@@ -24,6 +22,7 @@ repo_CRI_CTL=$k8s_build_directory/cri-tools
 repo_RUNC=$k8s_build_directory/runc
 repo_CONTD=$k8s_build_directory/containerd
 repo_CNI_plug=$k8s_build_directory/plugins
+repo_CRUN=$k8s_build_directory/crun
 
 cd $k8s_build_directory
 
@@ -41,12 +40,17 @@ else
     echo "downloading cri-tool source"
     git clone https://github.com/kubernetes-sigs/cri-tools.git
 fi
-if [ -d "$repo_RUNC" ];
+if [ -z "${k8s_RUNC_V// }" ]
 then
-    echo "runc repo exists - delete local folder to download again"
+    echo "You opted out for runc"
 else
-    echo "downloading runc source"
-    git clone https://github.com/opencontainers/runc.git
+    if [ -d "$repo_RUNC" ];
+    then
+        echo "runc repo exists - delete local folder to download again"
+    else
+        echo "downloading runc source"
+        git clone https://github.com/opencontainers/runc.git
+    fi
 fi
 if [ -d "$repo_CONTD" ];
 then
@@ -61,6 +65,22 @@ then
 else
     echo "downloading cni plugins source"
     git clone https://github.com/containernetworking/plugins.git
+fi
+
+# sudo apt-get install -y make git gcc build-essential pkgconf libtool \
+# libsystemd-dev libprotobuf-c-dev libcap-dev libseccomp-dev libyajl-dev \
+# libgcrypt20-dev go-md2man autoconf python3 automake
+if [ -z "${k8s_CRUN_V// }" ]
+then
+    echo "You opted out for crun"
+else
+    if [ -d "$repo_CRUN" ];
+    then
+        echo "crun repo exists - delete local folder to download again"
+    else
+        echo "downloading crun source"
+        git clone https://github.com/containers/crun.git
+    fi
 fi
 
 cd $project_path

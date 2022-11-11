@@ -10,6 +10,7 @@
 #   V: 1.22                         ## k8s version ################################################################
 #   CRI_CTL_V: 1.25                 ## CRI version ################################################################
 #   RUNC_V: 1.1                     ## runc version ###############################################################
+#   CRUN_V: 1.7                     ## Any one entry will work either RUNC or CRUN
 #   CONTD_V: 1.6                    ## containerd version #########################################################
 #   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
 #   build_directory: "<path>"       ## path to the directory where you downloaded & build all k8s related source ## 
@@ -22,14 +23,14 @@ k8s:
   ip_start: 192.168.121.128
   ip_end: 192.168.121.254
   ncpnd: 1
-  nwrknd: 2
+  nwrknd: 1
   cni: "default"
   V: 1.25
   CRI_CTL_V: 1.25
-  RUNC_V: 1.1
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
   build_directory: "/home/vindpro/home_projects/k8s_build_lab"
+  CRUN_V: 1.7
 node:
   private_key_name: "vindpro_local"
   os: "generic/ubuntu2204"

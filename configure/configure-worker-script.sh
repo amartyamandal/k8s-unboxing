@@ -112,9 +112,19 @@ EOF
 	done 
   ################## need to change later ########################
   copyFile 'wrk' '.tmp/crictl_'$k8s_CRI_CTL_V'/crictl' '' 'k8s-node-'$instance
-  copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$instance
+
+  if [ ${#k8s_RUNC_V} -gt 0 ]
+  then
+      copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$instance
+  fi
+
   copyFile 'wrk' '.tmp/contd_'$k8s_CONTD_V 'containerd' 'k8s-node-'$instance
   copyFile 'wrk' '.tmp/cni_'$k8s_CNI_PLUGIN_V 'cni_plugin' 'k8s-node-'$instance
+
+  if [ ${#k8s_CRUN_V} -gt 0 ]
+  then
+    copyFile 'wrk' '.tmp/crun_'$k8s_CRUN_V'/crun' 'runc' 'k8s-node-'$instance
+  fi
 done 
 
 if [[ "$k8s_cni" == "default" ]]
