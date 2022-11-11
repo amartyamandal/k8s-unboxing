@@ -90,12 +90,13 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
-
+###########################################################
+#apiVersion: kubescheduler.config.k8s.io/v1beta1
 echo "Configure the Kubernetes Scheduler"
 sudo cp kubeconfigs/kube-scheduler.kubeconfig /var/lib/kubernetes/
 
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: kubescheduler.config.k8s.io/v1beta1
+apiVersion: kubescheduler.config.k8s.io/v1
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
@@ -183,4 +184,4 @@ curl --cacert /var/lib/kubernetes/ca.pem  https://$KUBERNETES_LB_PUBLIC_ADDRESS:
 
 #sudo systemctl restart kube-controller-manager kube-apiserver kube-scheduler
 
-#sudo journalctl -u kube-apiserver --since today --no-pager --follow
+#sudo journalctl -u kube-scheduler --since today --no-pager --follow

@@ -9,16 +9,22 @@ then
     if [ $cpndcount -gt 0 ]
     then
         ndops cp 'destroy --force'
+    else
+        echo "no control plane nodes eixsts for cluster with provider "$k8s_provider
     fi
 
     if [ $wrkndcount -gt 0 ]
     then
         ndops wrk 'destroy --force'
+    else
+        echo "no worker nodes eixsts for cluster with provider "$k8s_provider
     fi
 
     if [ $lbndcount -gt 0 ]
     then
         ndops lb 'destroy --force'
+    else
+        echo "no lb node eixsts for cluster with provider "$k8s_provider
     fi
     rm -f .tmp/*.sh \
     .tmp/*.cfg \
@@ -29,7 +35,7 @@ elif [[ $2 == wrk ]]
 then
     if [ $wrkndcount -gt 0 ]
     then
-        kubectl delete -f https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml
+        kubectl delete -f ./dns/coredns/coredns-1.8.yaml
         ciliumresource=$(kubectl get pod -A | grep cilium -c)
         if [ $ciliumresource -gt 0 ]
         then
@@ -64,6 +70,8 @@ then
         then
             ndops wrk 'destroy --force'
         fi
+    else
+        echo "no worker nodes eixsts for cluster with provider "$k8s_provider
     fi
 fi
 

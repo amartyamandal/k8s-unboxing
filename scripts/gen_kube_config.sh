@@ -8,7 +8,7 @@ echo "Generate a kubeconfig file for the kube-proxy service..."
 rm -rf kubeconfig/prxy
 mkdir -p kubeconfig/prxy
 #--server=https://${KUBERNETES_PUBLIC_ADDRESS}:6443 \
-kubectl config set-cluster kubernetes-the-hard-way \
+kubectl config set-cluster k8s_unboxing \
     --certificate-authority=certs/ca/ca.pem \
     --embed-certs=true \
     --server=https://${LB_IP_ADDRESS}:6443 \
@@ -21,7 +21,7 @@ kubectl config set-credentials system:kube-proxy \
   --kubeconfig=kubeconfig/prxy/kube-proxy.kubeconfig
 
 kubectl config set-context default \
-  --cluster=kubernetes-the-hard-way \
+  --cluster=k8s_unboxing \
   --user=system:kube-proxy \
   --kubeconfig=kubeconfig/prxy/kube-proxy.kubeconfig
 
@@ -31,7 +31,7 @@ echo "Generate a kubeconfig file for the kube-controller-manager service..."
 
 rm -rf kubeconfig/kubecntrl
 mkdir -p kubeconfig/kubecntrl
-kubectl config set-cluster kubernetes-the-hard-way \
+kubectl config set-cluster k8s_unboxing \
     --certificate-authority=certs/ca/ca.pem \
     --embed-certs=true \
     --server=https://127.0.0.1:6443 \
@@ -44,7 +44,7 @@ kubectl config set-credentials system:kube-controller-manager \
   --kubeconfig=kubeconfig/kubecntrl/kube-controller-manager.kubeconfig
 
 kubectl config set-context default \
-  --cluster=kubernetes-the-hard-way \
+  --cluster=k8s_unboxing \
   --user=system:kube-controller-manager \
   --kubeconfig=kubeconfig/kubecntrl/kube-controller-manager.kubeconfig
 
@@ -54,7 +54,7 @@ echo "Generate a kubeconfig file for the kube-scheduler service..."
 
 rm -rf kubeconfig/schedulerclient
 mkdir -p kubeconfig/schedulerclient
-kubectl config set-cluster kubernetes-the-hard-way \
+kubectl config set-cluster k8s_unboxing \
     --certificate-authority=certs/ca/ca.pem \
     --embed-certs=true \
     --server=https://127.0.0.1:6443 \
@@ -67,7 +67,7 @@ kubectl config set-credentials system:kube-scheduler \
   --kubeconfig=kubeconfig/schedulerclient/kube-scheduler.kubeconfig
 
 kubectl config set-context default \
-  --cluster=kubernetes-the-hard-way \
+  --cluster=k8s_unboxing \
   --user=system:kube-scheduler \
   --kubeconfig=kubeconfig/schedulerclient/kube-scheduler.kubeconfig
 
@@ -76,7 +76,7 @@ echo "Generate a kubeconfig file for the admin user..."
 
 rm -rf kubeconfig/admin
 mkdir -p kubeconfig/admin
-kubectl config set-cluster kubernetes-the-hard-way \
+kubectl config set-cluster k8s_unboxing \
     --certificate-authority=certs/ca/ca.pem \
     --embed-certs=true \
     --server=https://127.0.0.1:6443 \
@@ -89,7 +89,7 @@ kubectl config set-credentials admin \
   --kubeconfig=kubeconfig/admin/admin.kubeconfig
 
 kubectl config set-context default \
-  --cluster=kubernetes-the-hard-way \
+  --cluster=k8s_unboxing \
   --user=admin \
   --kubeconfig=kubeconfig/admin/admin.kubeconfig
 

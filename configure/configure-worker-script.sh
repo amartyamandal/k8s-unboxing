@@ -48,7 +48,7 @@ cat > certs/wrknodes/k8s-node-${instance}-csr.json <<EOF
       "C": "CAN",
       "L": "Toronto",
       "O": "system:nodes",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "k8s unboxing",
       "ST": "Ontario"
     }
   ]
@@ -68,7 +68,7 @@ EOF
   run_rmComm 'wrk' 'k8s-node-'$instance 'mkdir certs;mkdir kubeconfigs'
   echo "Generate a kubeconfig file for "k8s-node-${instance}
   #--server=https://${KUBERNETES_PUBLIC_ADDRESS}:6443 \
-  kubectl config set-cluster kubernetes-the-hard-way \
+  kubectl config set-cluster k8s_unboxing \
     --certificate-authority=certs/ca/ca.pem \
     --embed-certs=true \
     --server=https://${LB_IP_ADDRESS}:6443 \
@@ -81,7 +81,7 @@ EOF
     --kubeconfig=kubeconfig/wrknodes/k8s-node-${instance}.kubeconfig
 
   kubectl config set-context default \
-    --cluster=kubernetes-the-hard-way \
+    --cluster=k8s_unboxing \
     --user=system:node:k8s-node-${instance} \
     --kubeconfig=kubeconfig/wrknodes/k8s-node-${instance}.kubeconfig
 
@@ -112,9 +112,19 @@ EOF
 	done 
   ################## need to change later ########################
   copyFile 'wrk' '.tmp/crictl_'$k8s_CRI_CTL_V'/crictl' '' 'k8s-node-'$instance
-  copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$instance
+
+  if [ ${#k8s_RUNC_V} -gt 0 ]
+  then
+      copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$instance
+  fi
+
   copyFile 'wrk' '.tmp/contd_'$k8s_CONTD_V 'containerd' 'k8s-node-'$instance
   copyFile 'wrk' '.tmp/cni_'$k8s_CNI_PLUGIN_V 'cni_plugin' 'k8s-node-'$instance
+
+  if [ ${#k8s_CRUN_V} -gt 0 ]
+  then
+    copyFile 'wrk' '.tmp/crun_'$k8s_CRUN_V'/crun' 'runc' 'k8s-node-'$instance
+  fi
 done 
 
 if [[ "$k8s_cni" == "default" ]]

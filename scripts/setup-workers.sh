@@ -7,7 +7,6 @@ echo "calling configure-hosts-worker-script.sh========================="
 echo "calling worker-dns-entry.sh========================="
 ./configure/worker-dns-entry.sh
 
-
 echo "Configure k8s workers install script..."
 
 echo "calling configure-worker-script.sh========================="
