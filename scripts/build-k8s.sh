@@ -6,7 +6,7 @@ DIR_CRI_CTL=$project_path/.tmp/crictl_$k8s_CRI_CTL_V
 DIR_RUNC=$project_path/.tmp/runc_$k8s_RUNC_V
 DIR_CONTD=$project_path/.tmp/contd_$k8s_CONTD_V
 DIR_CNI_PLUGIN=$project_path/.tmp/cni_$k8s_CNI_PLUGIN_V
-echo $DIR_CNI_PLUGIN
+DIR_CRUN=$project_path/.tmp/crun_$k8s_CRUN_V
 
 if [ -d "$DIR_KUBE" ];
 then
@@ -63,31 +63,32 @@ else
    
 fi
 
-
-
-if [ -d "$DIR_RUNC" ];
+if [ -z "${k8s_RUNC_V// }" ]
 then
-    echo "runc binaries exists for version "$k8s_RUNC_V
+    echo "You opted out for runc"
 else
-    echo "build & copy runc binaries for version "$k8s_RUNC_V
-    
-    runc_path=$k8s_build_directory/runc 
-    runc_binary_path=$runc_path
-    
+    if [ -d "$DIR_RUNC" ];
+    then
+        echo "runc binaries exists for version "$k8s_RUNC_V
+    else
+        echo "build & copy runc binaries for version "$k8s_RUNC_V
+        
+        runc_path=$k8s_build_directory/runc 
+        runc_binary_path=$runc_path
+        
 
-    cd $runc_path
+        cd $runc_path
 
-    git checkout release-$k8s_RUNC_V
-    sudo make
+        git checkout release-$k8s_RUNC_V
+        sudo make
 
-    sudo mkdir $DIR_RUNC
-    #cd $runc_binary_path
+        sudo mkdir $DIR_RUNC
+        #cd $runc_binary_path
+        
+        sudo cp $runc_binary_path/runc $DIR_RUNC/runc
     
-    sudo cp $runc_binary_path/runc $DIR_RUNC/runc
-   
+    fi
 fi
-
-
 
 if [ -d "$DIR_CONTD" ];
 then
@@ -132,3 +133,33 @@ else
    
 fi
 
+if [ -z "${k8s_CRUN_V// }" ]
+then
+    echo "You opted out for crun"
+else
+    if [ -d "$DIR_CRUN" ];
+    then
+        echo "crun binaries exists for version "$k8s_CRUN_V
+    else
+        echo "build & copy crun binaries for main "
+    
+        
+        crun_path=$k8s_build_directory/crun
+        crun_binary_path=$crun_path
+        
+        #echo $crun_binary_path
+
+        cd $crun_path
+        
+
+        git checkout $k8s_CRUN_V
+        sudo ./autogen.sh
+        sudo ./configure  #--enable-shared
+        sudo make
+
+        sudo mkdir $DIR_CRUN
+        
+        
+        sudo cp $crun_binary_path/crun $DIR_CRUN/crun
+    fi
+fi

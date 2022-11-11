@@ -1,7 +1,10 @@
 #!/bin/bash
 echo "install the OS dependencies"
+sudo apt update
 sudo sysctl net.ipv4.conf.all.forwarding=1
-sudo apt install socat conntrack ipset wget jq vim -y
+sudo apt install socat conntrack ipset wget jq vim libyajl-dev -y
+
+
 ################################################
 echo "Disable Swap"
 sudo swapoff -a
@@ -18,7 +21,7 @@ sudo mkdir -p \
 echo "Install & configure the worker binaries:"
 sudo mv containerd/* /bin/
 sudo mv cni_plugin/* /opt/cni/bin/
-chmod +x crictl kubectl kube-proxy kubelet runc 
+chmod +x crictl kubectl kube-proxy kubelet runc
 sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
 
 ###############################################
@@ -86,27 +89,27 @@ cat << EOF | sudo tee /etc/containerd/config.toml
         runtime_root = ""
         privileged_without_host_devices = false
         base_runtime_spec = ""
-    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-      [plugins."io.containerd.grpc.v1.cri".cni]
-        bin_dir = "/opt/cni/bin"
-        conf_dir = "/etc/cni/net.d"
-        max_conf_num = 1
-        conf_template = ""
-      [plugins."io.containerd.runtime.v1.linux"]
-        shim = "containerd-shim"
-        runtime = "runc"
-        runtime_root = ""
-        no_shim = false
-        shim_debug = false
-      [plugins."io.containerd.runtime.v2.task"]
-        platforms = ["linux/amd64"]
-      [plugins."io.containerd.service.v1.diff-service"]
-        default = ["walking"]
-      [plugins."io.containerd.snapshotter.v1.devmapper"]
-        root_path = ""
-        pool_name = ""
-        base_image_size = ""
-        async_remove = false
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+          [plugins."io.containerd.grpc.v1.cri".cni]
+            bin_dir = "/opt/cni/bin"
+            conf_dir = "/etc/cni/net.d"
+            max_conf_num = 1
+            conf_template = ""
+          [plugins."io.containerd.runtime.v1.linux"]
+            shim = "containerd-shim"
+            runtime = "runc"
+            runtime_root = ""
+            no_shim = false
+            shim_debug = false
+          [plugins."io.containerd.runtime.v2.task"]
+            platforms = ["linux/amd64"]
+          [plugins."io.containerd.service.v1.diff-service"]
+            default = ["walking"]
+          [plugins."io.containerd.snapshotter.v1.devmapper"]
+            root_path = ""
+            pool_name = ""
+            base_image_size = ""
+            async_remove = false
 EOF
 ####################################################
 echo "Create the containerd.service systemd unit file"
@@ -246,6 +249,6 @@ sudo systemctl start containerd kubelet kube-proxy
 
 sudo systemctl restart containerd kubelet kube-proxy
 #kubectl get nodes --kubeconfig admin.kubeconfig
-#sudo journalctl -u kubelet --since today --no-pager --follow
+#sudo journalctl -u containerd --since today --no-pager --follow
 #sudo systemctl restart containerd kubelet kube-proxy
 #sudo systemctl status containerd kubelet kube-proxy

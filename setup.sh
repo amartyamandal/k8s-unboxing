@@ -13,9 +13,11 @@ else
     INPUT=$(echo $INPUT | xargs)
     validateInput INPUT
     printf "#!/bin/bash\n\n" > ./run.sh
+    printf "source ./configure/functions/utility.sh\n" > ./run.sh
     sudo chmod +x ./run.sh 
 
     parse_yaml k8s-config.yaml >> ./run.sh
+    printf "validate_yaml_input\n" >> ./run.sh
     if [[ $1 == del ]]
     then
         if [ -z "$2" ]

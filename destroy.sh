@@ -9,16 +9,22 @@ then
     if [ $cpndcount -gt 0 ]
     then
         ndops cp 'destroy --force'
+    else
+        echo "no control plane nodes eixsts for cluster with provider "$k8s_provider
     fi
 
     if [ $wrkndcount -gt 0 ]
     then
         ndops wrk 'destroy --force'
+    else
+        echo "no worker nodes eixsts for cluster with provider "$k8s_provider
     fi
 
     if [ $lbndcount -gt 0 ]
     then
         ndops lb 'destroy --force'
+    else
+        echo "no lb node eixsts for cluster with provider "$k8s_provider
     fi
     rm -f .tmp/*.sh \
     .tmp/*.cfg \
@@ -64,6 +70,8 @@ then
         then
             ndops wrk 'destroy --force'
         fi
+    else
+        echo "no worker nodes eixsts for cluster with provider "$k8s_provider
     fi
 fi
 
