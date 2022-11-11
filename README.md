@@ -35,7 +35,6 @@ k8s:
   cni: "default"
   V: 1.25
   CRI_CTL_V: 1.25
-  RUNC_V: 1.1
   CRUN_V: 1.7
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
