@@ -51,11 +51,19 @@ following table would be helpful
 |<pre><code>./setup.sh make</code></pre>| Download source code for Kubernetes, Cri-tools, runc, containerd & cni plugins. |
 |<pre><code>./setup.sh build</code></pre>| Build Kubernetes, Cri-tools, runc, containerd & cni plugins and copy to the main project tmp folder, so that any changes made to any of this source is readily available for testing.|
 ||**NOTE:** etcd is the only binary which is getting downloaded and not getting build locally|
-| <pre><code>./setup.sh all</code></pre> | Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
-| <pre><code>./setup.sh cp</code></pre> | Only creates the control plane |
-| <pre><code>./setup.sh wrk</code></pre> | If control plane exists creates worker nodes and configure the same |
-| <pre><code>./setup.sh del</code></pre> | Destroy entire cluster |
-| <pre><code>./setup.sh del wrk</code></pre> | Only remove the worker nodes, so that you can redeploy the worker nodes with changes you made, keeping the control plane intact |
+|<pre><code>./setup.sh all</code></pre>| Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
+|<pre><code>./setup.sh cp</code></pre>| Only creates the control plane |
+|<pre><code>./setup.sh wrk</code></pre>| If control plane exists creates worker nodes and configure the same |
+|<pre><code>./setup.sh del</code></pre>| Destroy entire cluster |
+|<pre><code>./setup.sh del wrk</code></pre>| Only remove the worker nodes, so that you can redeploy the worker nodes with changes you made, keeping the control plane intact |
+
+Following should be the right sequence of commands for the first time users...
+
+<pre><code>./setup.sh make
+./setup.sh build
+./setup.sh all</code></pre>
+
+
 
 FYI- "build" for the first time will take some time mostly to build k8s binaries, do check "build-k8s.sh" under scripts directory for the build command and you are free to make changes according to your environment
  <pre><code>
@@ -96,7 +104,10 @@ Few things to remember before using this repo.
   * It will ask for "sudo", you are welcome to check the code before you go with it, nothing harmful though
   * ansible
 
-WARNING!! - it doese update your /etc/hosts, but before that it keeps a backup.You can switch it off though
+
+**NOTE:** do not forget to downgrade or upgrade kubectl version while changing k8s version more than one version up or down
+
+**WARNING!!** it doese update your /etc/hosts, but before that it keeps a backup.You can switch it off though
 There are two templates for hosts under folder "templates" one for the guest (hosts.node.template) and otherone for the host.
 in case you have customization in your existing host file just replace the hosts.template (which is for host) and just update with following bold placeholders
 
