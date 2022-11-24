@@ -26,11 +26,15 @@ sudo sed -i 's/k8s-lb-ip/'$INTERNAL_LB_IP'/g' /etc/hosts
 sudo sed -i 's/k8s-lb-ip/'$INTERNAL_LB_IP'/g' .tmp/hosts.node
 
 WRKHOSTS=""
-for (( instance = 1; instance <= $k8s_nwrknd; ++instance )); do
-    INTERNAL_IP="$(getIP 'wrk' 'k8s-node-'$instance)"
+
+for vm in $(virsh list | grep k8s-node | awk '{print $2}')
+do
+    vm_name=$(echo "$vm" | tail -c 14)
+    INTERNAL_IP="$(getIP 'wrk' $vm_name)"
     echo $INTERNAL_IP
-    WRKHOSTS+="$INTERNAL_IP k8s-node-$instance.$k8s_domain\n"
+    WRKHOSTS+="$INTERNAL_IP $vm_name.$k8s_domain\n"
 done
+
 sudo sed -i "s/@WRKHOSTS@/$WRKHOSTS/g" /etc/hosts
 sudo sed -i "s/@WRKHOSTS@/$WRKHOSTS/g" .tmp/hosts.node
 sudo cp /etc/hosts .tmp/hosts
@@ -40,9 +44,13 @@ for (( instance = 1; instance <= $k8s_ncpnd; ++instance )); do
     run_rmComm 'cp' 'k8s-master-'$instance 'sudo cp /etc/hosts /etc/hosts.bkup;sudo cp hosts /etc/hosts'
 done
 
-for (( instance = 1; instance <= $k8s_nwrknd; ++instance )); do
-    copyFile 'wrk' '.tmp/hosts.node' 'hosts' 'k8s-node-'$instance
-    run_rmComm 'wrk' 'k8s-node-'$instance 'sudo cp /etc/hosts /etc/hosts.bkup;sudo cp hosts /etc/hosts'
+
+
+for vm in $(virsh list | grep k8s-node | awk '{print $2}')
+do
+    vm_name=$(echo "$vm" | tail -c 14)
+    copyFile 'wrk' '.tmp/hosts.node' 'hosts' $vm_name
+    run_rmComm 'wrk' $vm_name 'sudo cp /etc/hosts /etc/hosts.bkup;sudo cp hosts /etc/hosts'
 done
 
 copyFile 'lb' '.tmp/hosts.node' 'hosts' 'k8s-lb'

@@ -29,8 +29,8 @@ k8s:
   CRI_CTL_V: 1.25
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
-  build_directory: "/home/vindpro/home_projects/k8s_build_lab"
-  CRUN_V: 1.7
+  build_directory: "/home/vindpro/github/k8s_build_lab"
+  RUNC_V: 1.1
 node:
   private_key_name: "vindpro_local"
   os: "generic/ubuntu2204"

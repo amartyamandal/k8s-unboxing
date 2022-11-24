@@ -23,36 +23,27 @@ else
         if [ -z "$2" ]
         then
             printf "./destroy.sh \$k8s_provider\n" >> ./run.sh
-        elif [[ $2 == wrk ]]
-        then
-            printf "./destroy.sh \$k8s_provider wrk\n" >> ./run.sh
+        # elif [[ $2 == wrk ]]
+        # then
+        #     printf "./destroy.sh \$k8s_provider wrk\n" >> ./run.sh
         fi
     elif [[ $1 == all ]]
     then
-        printf "./destroy.sh \$k8s_provider\n" >> ./run.sh
         printf "./setup_start.sh\n" >> ./run.sh
         printf "./setup_cp.sh\n" >> ./run.sh
+        printf "./setup_end.sh\n" >> ./run.sh
         printf "./setup_nd.sh\n" >> ./run.sh
+        printf "./scripts/setup-cni-plugin-dns.sh\n" >> ./run.sh
     elif [[ $1 == cp ]]
     then
         printf "./setup_start.sh\n" >> ./run.sh
         printf "./setup_cp.sh\n" >> ./run.sh
-    elif [[ $1 == wrk ]]
-    then
-        if [ -z "$2" ]
-        then
-            printf "./setup_nd.sh\n" >> ./run.sh
-        elif [[ $2 == redo ]]
-        then
-            printf "./setup_nd.sh redo\n" >> ./run.sh
-        fi
+        printf "./setup_end.sh\n" >> ./run.sh
     elif [[ $1 == scale ]]
     then
         if [ -z "$2" ]
         then
-            echo "Number of nodes to scale not supplied"
-        else
-            echo "logic not implemented"
+            printf "./setup_nd.sh\n" >> ./run.sh
         fi
     elif [[ $1 == make ]]
     then

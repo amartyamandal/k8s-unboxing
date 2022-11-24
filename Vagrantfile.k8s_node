@@ -2,7 +2,10 @@ PROVIDER = ENV["PROVIDER"]
 ENV['VAGRANT_DEFAULT_PROVIDER'] = PROVIDER 
 SSHKEY = ENV["SSHKEY"]
 IMAGE_NAME = ENV["IMAGE_NAME"] 
+#NDSTARTINDX = ENV["NDSTARTINDX"].to_i 
+ND_NAME = ENV["ND_NAME"]
 N = ENV["NDCOUNT"].to_i
+
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
@@ -23,31 +26,36 @@ Vagrant.configure("2") do |config|
         end
       end
 
-    config.vm.provider :PROVIDER do |v|
-        v.memory = 2048
-        v.cpus = 2
-        if PROVIDER == 'libvirt'
-            v.management_network_name = "vagrant-libvirt"
-        elsif PROVIDER == 'virtualbox'
-            v.management_network_name = "vboxnet0"
+   
+    
+
+    r = Random.new
+    ssh_port = r.rand(1000...5000)
+
+    config.vm.define "k8s-node-#{ND_NAME}" do |node|
+        node.vm.box = IMAGE_NAME
+        node.vm.provider :PROVIDER do |v|
+            v.memory = 2048
+            v.cpus = 2
+            v.default_prefix = ""
+            v.name = "k8s-node-#{ND_NAME}"
+            if PROVIDER == 'libvirt'
+                v.management_network_name = "vagrant-libvirt"
+            elsif PROVIDER == 'virtualbox'
+                v.management_network_name = "vboxnet0"
+            end
+        end
+        if PROVIDER == 'virtualbox'
+            node.vm.network "private_network", type: "dhcp", name: "vboxnet0"
+        end
+        node.vm.network "forwarded_port", guest: 22, host: "#{ssh_port}", auto_correct: true, id: "ssh"
+        node.vm.hostname = "k8s-node-#{ND_NAME}"
+        node.vm.provision "ansible" do |ansible|
+            ansible.limit = "all"
+            ansible.playbook = "playbooks/node-playbook.yml"
+            ansible.extra_vars = {
+                host_name: "k8s-node-#{ND_NAME}"
+            }
         end
     end
-    
-    (1..N).each do |j|
-        config.vm.define "k8s-node-#{j}" do |node|
-            node.vm.box = IMAGE_NAME
-            if PROVIDER == 'virtualbox'
-                node.vm.network "private_network", type: "dhcp", name: "vboxnet0"
-            end
-            node.vm.network "forwarded_port", guest: 22, host: "#{j + 10126}", auto_correct: true, id: "ssh"
-            node.vm.hostname = "k8s-node-#{j}"
-            node.vm.provision "ansible" do |ansible|
-                ansible.limit = "all"
-                ansible.playbook = "playbooks/node-playbook.yml"
-                ansible.extra_vars = {
-                    host_name: "k8s-node-#{j}"
-                }
-            end
-        end
-     end
 end

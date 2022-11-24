@@ -20,8 +20,14 @@ function vg() {
         vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_master VAGRANT_DOTFILE_PATH=.vagrant_k8s_master "$vgVar" vagrant"
     elif [[ "$1" == "wrk" ]]
     then
-        vgVar=$(vgVars $k8s_nwrknd)
-        vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_node VAGRANT_DOTFILE_PATH=.vagrant_k8s_node "$vgVar" vagrant"
+        vgVar=$(vgVars)
+        if [ -z "$2" ]
+        then
+            echo "Operation can not be performed"
+            exit 1
+        else
+            vg_string="VAGRANT_VAGRANTFILE=Vagrantfile.k8s_node VAGRANT_DOTFILE_PATH=.vagrant_k8s_node ND_NAME=$2 "$vgVar" vagrant"
+        fi
     elif [[ "$1" == "lb" ]]
     then
         vgVar=$(vgVars)
@@ -39,6 +45,16 @@ function vg() {
 #$5=count
 function copyFile() {
     vg=$(vg $1)
+    if [[ "$1" == "wrk" ]]
+    then
+        if [ -z "$4" ]
+        then
+            echo "Operation can not be performed"
+            exit 1
+        fi
+        ndnum=$(echo $4 | tail -c 5)
+        vg=$(vg $1 $ndnum)
+    fi
     eval "$(echo $vg scp $2 $4:~/$3)"
 }
 ############################################
@@ -55,8 +71,19 @@ function getIface() {
 function getIP() {
     default_network_interface=$(getIface)
     vg=$(vg $1)
+    if [[ "$1" == "wrk" ]]
+    then
+        if [ -z "$2" ]
+        then
+            echo "Operation can not be performed"
+            exit 1
+        fi
+        ndnum=$(echo $2 | tail -c 5)
+        vg=$(vg $1 $ndnum)
+    fi
     local NODE_IP=$(eval "$(echo $vg ssh $2 -- ip -4 addr show $default_network_interface) | grep -oP '(?<=inet\s)\d+(\.\d+){3}'")    
     echo "$NODE_IP"
+    #echo $vg ssh $2 -- ip -4 addr show $default_network_interface
 }
 ####################################################
 function parse_yaml {
@@ -179,12 +206,33 @@ function validate_yaml_input {
 #$4=count
 function run_rmComm() {
     vg=$(vg $1)
+    if [[ "$1" == "wrk" ]]
+    then
+        if [ -z "$2" ]
+        then
+            echo "Operation can not be performed"
+            exit 1
+        fi
+        ndnum=$(echo $2 | tail -c 5)
+        vg=$(vg $1 $ndnum)
+    fi
+    #echo $vg ssh $2 -c "'${3}'"
     local  output=$(eval "$(echo $vg ssh $2 -c "'${3}'")")
     echo "$output" | tr '\r' ' '
 }
 ###########################################
 function ndops() {
     vg=$(vg $1)
+    if [[ "$1" == "wrk" ]]
+    then
+        if [ -z "$3" ]
+        then
+            echo "Operation can not be performed"
+            exit 1
+        fi
+        ndnum=$3
+        vg=$(vg $1 $ndnum)
+    fi
     echo $vg $2
     eval "$(echo $vg $2)"
 }
@@ -236,7 +284,7 @@ function delNs() {
 
 function validateInput() {
 
-    commands=(all cp wrk del "del wrk" make build); 
+    commands=(all cp wrk scale make build); 
     d=$'\1'   # validation delimiter - value is \x01
     valid="${commands[@]/%/$d}"
     valid="$d${valid//$d /$d}"
@@ -249,4 +297,55 @@ function validateInput() {
         exit 1
     fi
 
+}
+
+function getvmToRemove() {
+    declare -a vm_array=()
+    for vm in $(virsh list | grep k8s-node | awk '{print $2}')
+    do
+        vm_name=$(echo "$vm")
+        vm_array+=("$vm_name")
+    done
+    
+    max=0
+    local vmToRemove=""
+   
+    for n in "${vm_array[@]}" ; do
+        number=$(echo $n | tail -c 5)
+        if (( $number > $max ))
+        then 
+            max=$number
+            vmToRemove=$n
+        fi
+    done
+    echo $vmToRemove
+}
+
+function getThirdOctate() {
+    declare -a pod_cidr_array=()
+    declare -a cidr_thirdOctate_array=()
+    for vm in $(virsh list | grep k8s-node | awk '{print $2}')
+    do
+        vm_name=$(echo "$vm" | tail -c 14)
+        pod_cidr_range=$(run_rmComm 'wrk' $vm_name 'cat pod_cidr.txt')
+        pod_cidr=$(echo ${pod_cidr_range:0:-4})
+        
+        #echo $pod_cidr
+        pod_cidr_array+=("$pod_cidr")
+        thirdOctate=$(echo $pod_cidr | cut -d . -f 3)
+        #echo $thirdOctate
+        cidr_thirdOctate_array+=("$thirdOctate")
+    done
+    
+    local maxThirdOctate=0
+    
+    
+    for n in "${cidr_thirdOctate_array[@]}" ; do
+        if [[ $n -gt $maxThirdOctate ]]
+        then 
+            maxThirdOctate=$n
+        fi
+    done
+    nxtThridOctate="$(($maxThirdOctate+1))"
+    echo $nxtThridOctate
 }
