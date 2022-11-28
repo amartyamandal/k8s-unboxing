@@ -154,7 +154,7 @@ function validate_yaml_input {
     fi
     if [ -z "${k8s_RUNC_V// }" ]
     then
-        if [ -z "${k8s_CRUN_V// }" ]
+        if [ -z "${k8s_CRUN_V// }" ] && [ -z "${k8s_KATA_V// }" ]
         then
             echo "runc version not supplied"
             exit 1
@@ -177,7 +177,7 @@ function validate_yaml_input {
     fi
     if [ -z "${k8s_CRUN_V// }" ]
     then
-        if [ -z "${k8s_RUNC_V// }" ]
+        if [ -z "${k8s_RUNC_V// }" ] && [ -z "${k8s_KATA_V// }" ]
         then
             echo "crun version not supplied"
             exit 1
@@ -193,7 +193,15 @@ function validate_yaml_input {
         echo "node_os value not supplied"
         exit 1
     fi
-    if [ ${#k8s_CRUN_V} -gt 0 ] && [ ${#k8s_RUNC_V} -gt 0 ]
+    if [ -z "${k8s_KATA_V// }" ]
+    then
+        if [ -z "${k8s_CRUN_V// }" ] && [ -z "${k8s_RUNC_V// }" ]
+        then
+            echo "kata runtime version not supplied"
+            exit 1
+        fi
+    fi
+    if [ ${#k8s_CRUN_V} -gt 0 ] && [ ${#k8s_RUNC_V} -gt 0 ] && [ ${#k8s_KATA_V} -gt 0 ]
     then
         echo "Only keep one runc option either runc or crun, remove one"
         exit 1
@@ -284,7 +292,7 @@ function delNs() {
 
 function validateInput() {
 
-    commands=(all cp wrk scale make build); 
+    commands=(all cp wrk scale make build del); 
     d=$'\1'   # validation delimiter - value is \x01
     valid="${commands[@]/%/$d}"
     valid="$d${valid//$d /$d}"

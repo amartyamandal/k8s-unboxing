@@ -20,8 +20,7 @@ sed -i 's/@k8s_cni@/'$k8s_cni'/g' .tmp/configure-worker.sh
 
 
 run_rmComm 'wrk' 'k8s-node-'$1 'rm -rf ./*'
-echo "Copy configure-worker.sh"
-copyFile 'wrk' '.tmp/configure-worker.sh' '' 'k8s-node-'$1 
+
 
 ##The Kubelet Client Certificates============================
 echo "Generating The Kubelet Client Certificates for worker node "k8s-node-${1}
@@ -97,18 +96,33 @@ done
 
 
 copyFile 'wrk' '.tmp/crictl_'$k8s_CRI_CTL_V'/crictl' '' 'k8s-node-'$1
+k8s_oci_runtime=""
 if [ ${#k8s_RUNC_V} -gt 0 ]
 then
+    k8s_oci_runtime=runc
     echo "copying runc....."
     copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$1
 fi
 if [ ${#k8s_CRUN_V} -gt 0 ]
 then
+  k8s_oci_runtime=crun
+  sed -i 's/@k8s_oci_runtime@/crun/g' .tmp/configure-worker.sh
   echo "copying crun as runc....."
   copyFile 'wrk' '.tmp/crun_'$k8s_CRUN_V'/crun' 'runc' 'k8s-node-'$1
 fi
+if [ ${#k8s_KATA_V} -gt 0 ]
+then
+  #copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$1
+  k8s_oci_runtime=kata
+  sed -i 's/@k8s_oci_runtime@/kata/g' .tmp/configure-worker.sh
+  echo "kata will be build & configured during node configuration....."
+fi
+sed -i 's/@k8s_oci_runtime@/'$k8s_oci_runtime'/g' .tmp/configure-worker.sh
 copyFile 'wrk' '.tmp/contd_'$k8s_CONTD_V 'containerd' 'k8s-node-'$1
 copyFile 'wrk' '.tmp/cni_'$k8s_CNI_PLUGIN_V 'cni_plugin' 'k8s-node-'$1
+
+echo "Copy configure-worker.sh"
+copyFile 'wrk' '.tmp/configure-worker.sh' '' 'k8s-node-'$1 
 
 
 
