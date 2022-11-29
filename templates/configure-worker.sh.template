@@ -21,8 +21,8 @@ sudo mkdir -p \
 echo "Install & configure the worker binaries:"
 sudo mv containerd/* /bin/
 sudo mv cni_plugin/* /opt/cni/bin/
-chmod +x crictl kubectl kube-proxy kubelet runc
-sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
+chmod +x crictl kubectl kube-proxy kubelet
+sudo mv crictl kubectl kube-proxy kubelet /usr/local/bin/
 
 ###############################################
 if [ "@k8s_cni@" = "default" ]
@@ -61,6 +61,11 @@ fi
 ##########################################################################
 echo "Configure containerd"
 sudo mkdir -p /etc/containerd/
+if [ "@k8s_oci_runtime@" = "runc" ]
+then
+
+chmod +x crictl runc
+sudo mv runc /usr/local/bin/
 
 cat << EOF | sudo tee /etc/containerd/config.toml
 [plugins]
@@ -111,6 +116,134 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             base_image_size = ""
             async_remove = false
 EOF
+elif [ "@k8s_oci_runtime@" = "crun" ]
+then
+
+chmod +x crictl runc
+sudo mv runc /usr/local/bin/
+
+cat << EOF | sudo tee /etc/containerd/config.toml
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri".containerd]
+    snapshotter = "overlayfs"
+    default_runtime_name = "runc"
+    no_pivot = false
+    disable_snapshot_annotations = true
+    discard_unpacked_layers = false
+    [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
+      runtime_type = ""
+      runtime_engine = ""
+      runtime_root = ""
+      privileged_without_host_devices = false
+      base_runtime_spec = ""
+    [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
+      runtime_type = ""
+      runtime_engine = ""
+      runtime_root = ""
+      privileged_without_host_devices = false
+      base_runtime_spec = ""
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+        runtime_type = "io.containerd.runc.v2"
+        runtime_engine = ""
+        runtime_root = ""
+        privileged_without_host_devices = false
+        base_runtime_spec = ""
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+          [plugins."io.containerd.grpc.v1.cri".cni]
+            bin_dir = "/opt/cni/bin"
+            conf_dir = "/etc/cni/net.d"
+            max_conf_num = 1
+            conf_template = ""
+          [plugins."io.containerd.runtime.v1.linux"]
+            shim = "containerd-shim"
+            runtime = "runc"
+            runtime_root = ""
+            no_shim = false
+            shim_debug = false
+          [plugins."io.containerd.runtime.v2.task"]
+            platforms = ["linux/amd64"]
+          [plugins."io.containerd.service.v1.diff-service"]
+            default = ["walking"]
+          [plugins."io.containerd.snapshotter.v1.devmapper"]
+            root_path = ""
+            pool_name = ""
+            base_image_size = ""
+            async_remove = false
+EOF
+elif [ "@k8s_oci_runtime@" = "kata" ]
+then
+  chmod +x crictl runc
+  sudo mv runc /usr/local/bin/
+  echo "check for virtualization compatibility"
+  egrep -c '(vmx|svm)' /proc/cpuinfo
+  grep -E --color '(vmx|svm)' /proc/cpuinfo
+
+  echo "Installing golang and preparing node to build and install kata runtime"
+  wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
+  sha256sum go1.19.3.linux-amd64.tar.gz
+  sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
+  sudo cp /usr/local/go/bin/go /usr/local/bin/
+  mkdir -p $HOME/go_projects/{bin,src,pkg}
+
+  export GOROOT=/usr/local/bin 
+  export GOPATH=$HOME/go_projects
+  echo "export GOROOT=/usr/local/bin" >> ~/.profile
+  echo "export GOPATH=\$HOME/go_projects" >> ~/.profile 
+
+  source ~/.profile
+  echo $PATH
+  go version
+
+  sudo apt update
+  sudo apt-get install build-essential rustc -y
+
+
+  cd $GOPATH/src
+  sudo git clone https://github.com/kata-containers/kata-containers.git
+  pushd $HOME/go_projects/src/kata-containers/src/runtime
+  sudo make && sudo -E "PATH=$PATH" make install
+  sudo mkdir -p /etc/kata-containers/
+  popd
+
+  cd ~
+
+  echo "crapy hack using snap to copy kata-containers configurations"
+  sudo snap install kata-containers --stable --classic
+  sudo cp /snap/kata-containers/current/usr/share/defaults/kata-containers/configuration.toml /etc/kata-containers/
+  sudo ln -sf /snap/kata-containers/current/usr/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
+
+  echo "checking kata-runtime"
+  sudo kata-runtime check
+
+  echo "hack to resolve  cgroup mountpoint does not exist issue"
+  sudo mkdir /sys/fs/cgroup/systemd
+  sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+
+#*****************************************************
+cat << EOF | sudo tee /etc/containerd/config.toml
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri".containerd]
+    no_pivot = false
+  [plugins.cri.containerd.default_runtime]
+    runtime_type = "io.containerd.kata.v2"
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+      [plugins.cri.containerd.runtimes.kata]
+        runtime_type = "io.containerd.kata.v2"
+        privileged_without_host_devices = true
+        pod_annotations = ["io.katacontainers.*"]
+        container_annotations = ["io.katacontainers.*"]
+        [plugins.cri.containerd.runtimes.kata.options]
+          ConfigPath = "/etc/kata-containers/configuration.toml"
+          [plugins."io.containerd.grpc.v1.cri".cni]
+            bin_dir = "/opt/cni/bin"
+            conf_dir = "/etc/cni/net.d"
+            max_conf_num = 1
+            conf_template = ""
+EOF
+fi
+
+
 ####################################################
 echo "Create the containerd.service systemd unit file"
 cat <<EOF | sudo tee /etc/systemd/system/containerd.service
@@ -120,6 +253,7 @@ Documentation=https://containerd.io
 After=network.target
 
 [Service]
+Environment=
 ExecStartPre=/sbin/modprobe overlay
 ExecStart=/bin/containerd
 Restart=always
@@ -252,3 +386,8 @@ sudo systemctl restart containerd kubelet kube-proxy
 #sudo journalctl -u containerd --since today --no-pager --follow
 #sudo systemctl restart containerd kubelet kube-proxy
 #sudo systemctl status containerd kubelet kube-proxy
+#sudo ctr plugins ls
+#####################test for kata ############
+# image="docker.io/library/busybox:latest"
+# sudo ctr image pull "$image"
+# sudo ctr run --runtime "io.containerd.kata.v2" --rm -t "$image" test-kata uname -r

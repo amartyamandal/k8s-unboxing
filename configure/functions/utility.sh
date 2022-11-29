@@ -152,14 +152,6 @@ function validate_yaml_input {
         echo "CRI tool version not supplied"
         exit 1
     fi
-    if [ -z "${k8s_RUNC_V// }" ]
-    then
-        if [ -z "${k8s_CRUN_V// }" ]
-        then
-            echo "runc version not supplied"
-            exit 1
-        fi
-    fi
     if [ -z "${k8s_CONTD_V// }" ]
     then
         echo "containerd version not supplied"
@@ -175,14 +167,6 @@ function validate_yaml_input {
         echo "k8 build directory path not supplied"
         exit 1
     fi
-    if [ -z "${k8s_CRUN_V// }" ]
-    then
-        if [ -z "${k8s_RUNC_V// }" ]
-        then
-            echo "crun version not supplied"
-            exit 1
-        fi
-    fi
     if [ -z "${node_private_key_name// }" ]
     then
         echo "node_private_key_name value not supplied"
@@ -193,9 +177,14 @@ function validate_yaml_input {
         echo "node_os value not supplied"
         exit 1
     fi
-    if [ ${#k8s_CRUN_V} -gt 0 ] && [ ${#k8s_RUNC_V} -gt 0 ]
+    if [ -z "${k8s_runtime// }" ]
     then
-        echo "Only keep one runc option either runc or crun, remove one"
+        echo "runtime not supplied"
+        exit 1
+    fi
+    if [ -z "${k8s_runtime_v// }" ]
+    then
+        echo "runtime version not supplied"
         exit 1
     fi
 }
@@ -284,7 +273,7 @@ function delNs() {
 
 function validateInput() {
 
-    commands=(all cp wrk scale make build); 
+    commands=(all cp wrk scale make build del); 
     d=$'\1'   # validation delimiter - value is \x01
     valid="${commands[@]/%/$d}"
     valid="$d${valid//$d /$d}"
