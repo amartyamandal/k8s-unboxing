@@ -130,12 +130,12 @@ ff02::2 ip6-allrouters
 </code></pre>
 
 # Pre-requisites kata
-[kata](https://github.com/kata-containers/kata-containers) going through some major changes and coumentation is hard to follow.
+[kata](https://github.com/kata-containers/kata-containers) going through some major changes and documentation is hard to follow.
 Ideally kata runtime should be build and separately and copied to specific node, it is only required to check if node is capable of creating a Kata Container.
 Ideally these checks should not be part of node provisioning, but for the clarity of understanding, I am building kata runtime from source in the node itself.
 This will change later to more standard approach.But for the time being following are the commands getting executed to configure kata-runtime!
 <pre><code>
-echo "check for virtualization compatibility"
+  echo "check for virtualization compatibility"
   egrep -c '(vmx|svm)' /proc/cpuinfo
   grep -E --color '(vmx|svm)' /proc/cpuinfo
 
