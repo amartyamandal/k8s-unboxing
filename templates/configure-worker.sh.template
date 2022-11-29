@@ -44,7 +44,7 @@ cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
     "ipam": {
         "type": "host-local",
         "ranges": [
-          [{"subnet": "${POD_CIDR}"}]
+          [{"subnet": "\${POD_CIDR}"}]
         ],
         "routes": [{"dst": "0.0.0.0/0"}]
     }
@@ -182,53 +182,50 @@ EOCONTD
 elif [ "$k8s_runtime" = "kata" ]
 then
 cat <<EOCONTD
-then
-  #chmod +x crictl runc
-  #sudo mv runc /usr/local/bin/
-  echo "check for virtualization compatibility"
-  egrep -c '(vmx|svm)' /proc/cpuinfo
-  grep -E --color '(vmx|svm)' /proc/cpuinfo
+echo "check for virtualization compatibility"
+egrep -c '(vmx|svm)' /proc/cpuinfo
+grep -E --color '(vmx|svm)' /proc/cpuinfo
 
-  echo "Installing golang and preparing node to build and install kata runtime"
-  wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
-  sha256sum go1.19.3.linux-amd64.tar.gz
-  sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
-  sudo cp /usr/local/go/bin/go /usr/local/bin/
-  mkdir -p $HOME/go_projects/{bin,src,pkg}
+echo "Installing golang and preparing node to build and install kata runtime"
+wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
+sha256sum go1.19.3.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
+sudo cp /usr/local/go/bin/go /usr/local/bin/
+mkdir -p \$HOME/go_projects/{bin,src,pkg}
 
-  export GOROOT=/usr/local/bin 
-  export GOPATH=$HOME/go_projects
-  echo "export GOROOT=/usr/local/bin" >> ~/.profile
-  echo "export GOPATH=\$HOME/go_projects" >> ~/.profile 
+export GOROOT=/usr/local/bin 
+export GOPATH=\$HOME/go_projects
+echo "export GOROOT=/usr/local/bin" >> ~/.profile
+echo "export GOPATH=\$HOME/go_projects" >> ~/.profile 
 
-  source ~/.profile
-  echo $PATH
-  go version
+source ~/.profile
+echo \$PATH
+go version
 
-  sudo apt update
-  sudo apt-get install build-essential rustc -y
+sudo apt update
+sudo apt-get install build-essential rustc -y
 
 
-  cd $GOPATH/src
-  sudo git clone https://github.com/kata-containers/kata-containers.git
-  pushd $HOME/go_projects/src/kata-containers/src/runtime
-  sudo make && sudo -E "PATH=$PATH" make install
-  sudo mkdir -p /etc/kata-containers/
-  popd
+cd \$GOPATH/src
+sudo git clone https://github.com/kata-containers/kata-containers.git
+pushd \$HOME/go_projects/src/kata-containers/src/runtime
+sudo make && sudo -E "PATH=\$PATH" make install
+sudo mkdir -p /etc/kata-containers/
+popd
 
-  cd ~
+cd ~
 
-  echo "crapy hack using snap to copy kata-containers configurations"
-  sudo snap install kata-containers --stable --classic
-  sudo cp /snap/kata-containers/current/usr/share/defaults/kata-containers/configuration.toml /etc/kata-containers/
-  sudo ln -sf /snap/kata-containers/current/usr/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
+echo "crapy hack using snap to copy kata-containers configurations"
+sudo snap install kata-containers --stable --classic
+sudo cp /snap/kata-containers/current/usr/share/defaults/kata-containers/configuration.toml /etc/kata-containers/
+sudo ln -sf /snap/kata-containers/current/usr/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
 
-  echo "checking kata-runtime"
-  sudo kata-runtime check
+echo "checking kata-runtime"
+sudo kata-runtime check
 
-  echo "hack to resolve  cgroup mountpoint does not exist issue"
-  sudo mkdir /sys/fs/cgroup/systemd
-  sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+echo "hack to resolve  cgroup mountpoint does not exist issue"
+sudo mkdir /sys/fs/cgroup/systemd
+sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
 
 #*****************************************************
 cat << EOF | sudo tee /etc/containerd/config.toml
@@ -255,23 +252,22 @@ EOCONTD
 elif [ "$k8s_runtime" = "gvisor" ]
 then
 cat <<EOCONTD
-then
-  set -e
-  ARCH=$(uname -m)
-  URL=https://storage.googleapis.com/gvisor/releases/release/latest/${ARCH}
-  wget ${URL}/runsc ${URL}/runsc.sha512 \
-    ${URL}/containerd-shim-runsc-v1 ${URL}/containerd-shim-runsc-v1.sha512
-  sha512sum -c runsc.sha512 \
-    -c containerd-shim-runsc-v1.sha512
-  sudo rm -f *.sha512
-  chmod a+rx runsc containerd-shim-runsc-v1
-  sudo mv runsc containerd-shim-runsc-v1 /usr/local/bin
+set -e
+ARCH=\$(uname -m)
+URL=https://storage.googleapis.com/gvisor/releases/release/latest/\${ARCH}
+wget \${URL}/runsc \${URL}/runsc.sha512 \
+  \${URL}/containerd-shim-runsc-v1 \${URL}/containerd-shim-runsc-v1.sha512
+sha512sum -c runsc.sha512 \
+  -c containerd-shim-runsc-v1.sha512
+sudo rm -f *.sha512
+chmod a+rx runsc containerd-shim-runsc-v1
+sudo mv runsc containerd-shim-runsc-v1 /usr/local/bin
 cat << EOF | sudo tee /etc/containerd/config.toml
-version = 2
-[plugins."io.containerd.runtime.v1.linux"]
-  shim_debug = true
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-  runtime_type = "io.containerd.runsc.v1"
+[plugins]
+  [plugins."io.containerd.runtime.v1.linux"]
+    shim_debug = true
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+    runtime_type = "io.containerd.runsc.v1"
 EOF
 EOCONTD
 fi
@@ -303,9 +299,9 @@ WantedBy=multi-user.target
 EOF
 #######################################################
 echo "Configure the Kubelet"
-MACHINE_NAME=$(echo ${HOSTNAME} | cut -d"." -f1)
-sudo cp certs/${MACHINE_NAME}-key.pem certs/${MACHINE_NAME}.pem /var/lib/kubelet/
-sudo cp kubeconfigs/${MACHINE_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
+MACHINE_NAME=\$(echo \${HOSTNAME} | cut -d"." -f1)
+sudo cp certs/\${MACHINE_NAME}-key.pem certs/\${MACHINE_NAME}.pem /var/lib/kubelet/
+sudo cp kubeconfigs/\${MACHINE_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
 sudo cp certs/ca.pem /var/lib/kubernetes/
 ##########################################################
 EOW
@@ -330,11 +326,11 @@ authorization:
 clusterDomain: "cluster.local"
 clusterDNS:
   - "10.32.0.10"
-podCIDR: "${POD_CIDR}"
+podCIDR: "\${POD_CIDR}"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
-tlsCertFile: "/var/lib/kubelet/${MACHINE_NAME}.pem"
-tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
+tlsCertFile: "/var/lib/kubelet/\${MACHINE_NAME}.pem"
+tlsPrivateKeyFile: "/var/lib/kubelet/\${MACHINE_NAME}-key.pem"
 EOF
 EOW
 else
