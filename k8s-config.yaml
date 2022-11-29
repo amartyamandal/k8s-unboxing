@@ -31,8 +31,8 @@ k8s:
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
   build_directory: "/home/vindpro/github/k8s_build_lab"
-  runtime: "kata"
-  runtime_v: 2.4.2
+  runtime: "runc"
+  runtime_v: 1.1
 node:
   private_key_name: "vindpro_local"
   os: "generic/ubuntu2204"

@@ -1,6 +1,4 @@
 #!/bin/bash
-cat  << EOF
-#!/bin/bash
 echo "install the OS dependencies"
 sudo apt update
 sudo sysctl net.ipv4.conf.all.forwarding=1
@@ -25,13 +23,12 @@ sudo mv containerd/* /bin/
 sudo mv cni_plugin/* /opt/cni/bin/
 chmod +x crictl kubectl kube-proxy kubelet
 sudo mv crictl kubectl kube-proxy kubelet /usr/local/bin/
-EOF
+
 ###############################################
-if [ "$k8s_cni" = "default" ]
+if [ "@k8s_cni@" = "default" ]
 then
-cat <<EOCNI
-echo "Configure CNI Networking for basic routing"
-POD_CIDR=\$(cat \$HOME/pod_cidr.txt)
+  echo "Configure CNI Networking for basic routing"
+  POD_CIDR=$(cat $HOME/pod_cidr.txt)
 
 cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
 {
@@ -57,19 +54,16 @@ cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
     "type": "loopback"
 }
 EOF
-EOCNI
 fi
 #######hack to resolve  "cgroup mountpoint does not exist" issue##########
 # sudo mkdir /sys/fs/cgroup/systemd
 # sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
 ##########################################################################
-cat <<EOCONTD
 echo "Configure containerd"
 sudo mkdir -p /etc/containerd/
-EOCONTD
-if [ "$k8s_runtime" = "runc" ]
+if [ "@k8s_oci_runtime@" = "runc" ]
 then
-cat <<EOCONTD
+
 chmod +x crictl runc
 sudo mv runc /usr/local/bin/
 
@@ -122,10 +116,9 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             base_image_size = ""
             async_remove = false
 EOF
-EOCONTD
-elif [ "$k8s_runtime" = "crun" ]
+elif [ "@k8s_oci_runtime@" = "crun" ]
 then
-cat <<EOCONTD
+
 chmod +x crictl runc
 sudo mv runc /usr/local/bin/
 
@@ -178,10 +171,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             base_image_size = ""
             async_remove = false
 EOF
-EOCONTD
-elif [ "$k8s_runtime" = "kata" ]
-then
-cat <<EOCONTD
+elif [ "@k8s_oci_runtime@" = "kata" ]
 then
   #chmod +x crictl runc
   #sudo mv runc /usr/local/bin/
@@ -251,10 +241,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             max_conf_num = 1
             conf_template = ""
 EOF
-EOCONTD
-elif [ "$k8s_runtime" = "gvisor" ]
-then
-cat <<EOCONTD
+elif [ "@k8s_oci_runtime@" = "gvisor" ]
 then
   set -e
   ARCH=$(uname -m)
@@ -273,10 +260,9 @@ version = 2
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
   runtime_type = "io.containerd.runsc.v1"
 EOF
-EOCONTD
 fi
 
-cat <<EOW
+
 ####################################################
 echo "Create the containerd.service systemd unit file"
 cat <<EOF | sudo tee /etc/systemd/system/containerd.service
@@ -308,13 +294,9 @@ sudo cp certs/${MACHINE_NAME}-key.pem certs/${MACHINE_NAME}.pem /var/lib/kubelet
 sudo cp kubeconfigs/${MACHINE_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
 sudo cp certs/ca.pem /var/lib/kubernetes/
 ##########################################################
-EOW
-cat <<EOW
 echo "Create the kubelet-config.yaml configuration file"
-EOW
-if [ "$k8s_cni" = "default" ]
+if [ "@k8s_cni@" = "default" ]
 then
-cat <<EOW
 cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
@@ -336,9 +318,7 @@ runtimeRequestTimeout: "15m"
 tlsCertFile: "/var/lib/kubelet/${MACHINE_NAME}.pem"
 tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
 EOF
-EOW
 else
-cat <<EOW
 cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
@@ -359,13 +339,11 @@ runtimeRequestTimeout: "15m"
 tlsCertFile: "/var/lib/kubelet/${MACHINE_NAME}.pem"
 tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
 EOF
-EOW
 fi
 ############################################################
 # --network-plugin=cni \\
 # --image-pull-progress-deadline=2m \\
 # --container-runtime=remote \\
-cat <<EOW
 echo "Create the kubelet.service systemd unit file"
 cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
 [Unit]
@@ -423,7 +401,6 @@ sudo systemctl enable containerd kubelet kube-proxy --now
 sudo systemctl start containerd kubelet kube-proxy
 
 sudo systemctl restart containerd kubelet kube-proxy
-EOW
 #kubectl get nodes --kubeconfig admin.kubeconfig
 #sudo journalctl -u containerd --since today --no-pager --follow
 #sudo systemctl restart containerd kubelet kube-proxy
