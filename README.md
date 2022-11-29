@@ -8,7 +8,7 @@ Once download first thing you would like to do is to update k8s-config.yaml
 <pre><code>
 ## global definitions
 # k8s:
-#   provider: 'libvirt'             ## two options 'libvirt' or 'virtualbox'#######################################
+#   provider: 'libvirt'             ## two options 'libvirt' or 'virtualbox'with this release its only been tested with libvirtd ##
 #   domain: 'k8s.local'
 #   ip_start: 192.168.121.128       ## This is required for libvirt provider to create a subnet ###################
 #   ip_end: 192.168.121.254         ## for virtualbox its use the default vboxnet0 ################################
