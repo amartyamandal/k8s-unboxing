@@ -152,14 +152,6 @@ function validate_yaml_input {
         echo "CRI tool version not supplied"
         exit 1
     fi
-    if [ -z "${k8s_RUNC_V// }" ]
-    then
-        if [ -z "${k8s_CRUN_V// }" ] && [ -z "${k8s_KATA_V// }" ]
-        then
-            echo "runc version not supplied"
-            exit 1
-        fi
-    fi
     if [ -z "${k8s_CONTD_V// }" ]
     then
         echo "containerd version not supplied"
@@ -175,14 +167,6 @@ function validate_yaml_input {
         echo "k8 build directory path not supplied"
         exit 1
     fi
-    if [ -z "${k8s_CRUN_V// }" ]
-    then
-        if [ -z "${k8s_RUNC_V// }" ] && [ -z "${k8s_KATA_V// }" ]
-        then
-            echo "crun version not supplied"
-            exit 1
-        fi
-    fi
     if [ -z "${node_private_key_name// }" ]
     then
         echo "node_private_key_name value not supplied"
@@ -193,17 +177,14 @@ function validate_yaml_input {
         echo "node_os value not supplied"
         exit 1
     fi
-    if [ -z "${k8s_KATA_V// }" ]
+    if [ -z "${k8s_runtime// }" ]
     then
-        if [ -z "${k8s_CRUN_V// }" ] && [ -z "${k8s_RUNC_V// }" ]
-        then
-            echo "kata runtime version not supplied"
-            exit 1
-        fi
+        echo "runtime not supplied"
+        exit 1
     fi
-    if [ ${#k8s_CRUN_V} -gt 0 ] && [ ${#k8s_RUNC_V} -gt 0 ] && [ ${#k8s_KATA_V} -gt 0 ]
+    if [ -z "${k8s_runtime_v// }" ]
     then
-        echo "Only keep one runc option either runc or crun, remove one"
+        echo "runtime version not supplied"
         exit 1
     fi
 }

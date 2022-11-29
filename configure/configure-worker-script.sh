@@ -97,25 +97,34 @@ done
 
 copyFile 'wrk' '.tmp/crictl_'$k8s_CRI_CTL_V'/crictl' '' 'k8s-node-'$1
 k8s_oci_runtime=""
-if [ ${#k8s_RUNC_V} -gt 0 ]
+if [ -z "${k8s_runtime// }" ]
 then
-    k8s_oci_runtime=runc
-    echo "copying runc....."
-    copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$1
-fi
-if [ ${#k8s_CRUN_V} -gt 0 ]
-then
-  k8s_oci_runtime=crun
-  sed -i 's/@k8s_oci_runtime@/crun/g' .tmp/configure-worker.sh
-  echo "copying crun as runc....."
-  copyFile 'wrk' '.tmp/crun_'$k8s_CRUN_V'/crun' 'runc' 'k8s-node-'$1
-fi
-if [ ${#k8s_KATA_V} -gt 0 ]
-then
-  #copyFile 'wrk' '.tmp/runc_'$k8s_RUNC_V'/runc' '' 'k8s-node-'$1
-  k8s_oci_runtime=kata
-  sed -i 's/@k8s_oci_runtime@/kata/g' .tmp/configure-worker.sh
-  echo "kata will be build & configured during node configuration....."
+    echo "No runtime specified"
+else
+    if [ -z "${k8s_runtime_v// }" ]
+    then
+        echo "runtime version not supplied"
+    else
+        if [[ "$k8s_runtime" == "crun" ]]
+        then
+            k8s_oci_runtime=crun
+            sed -i 's/@k8s_oci_runtime@/crun/g' .tmp/configure-worker.sh
+            echo "copying crun as runc....."
+            copyFile 'wrk' '.tmp/crun_'$k8s_runtime_v'/crun' 'runc' 'k8s-node-'$1
+        elif [[ "$k8s_runtime" == "runc" ]]
+        then
+            k8s_oci_runtime=runc
+            echo "copying runc....."
+            copyFile 'wrk' '.tmp/runc_'$k8s_runtime_v'/runc' '' 'k8s-node-'$1
+        elif [[ "$k8s_runtime" == "kata" ]]
+        then
+            k8s_oci_runtime=kata
+            sed -i 's/@k8s_oci_runtime@/kata/g' .tmp/configure-worker.sh
+            echo "kata will be build & configured during node configuration....."
+        else
+            echo "runtime not implmented"
+        fi
+    fi
 fi
 sed -i 's/@k8s_oci_runtime@/'$k8s_oci_runtime'/g' .tmp/configure-worker.sh
 copyFile 'wrk' '.tmp/contd_'$k8s_CONTD_V 'containerd' 'k8s-node-'$1

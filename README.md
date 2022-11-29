@@ -17,8 +17,9 @@ Once download first thing you would like to do is to update k8s-config.yaml
 #   cni: "default"                  ## 3 options 'default'(simple routing & no 3rd party CNI),'calico','cilium' ###
 #   V: 1.22                         ## k8s version ################################################################
 #   CRI_CTL_V: 1.25                 ## CRI version ################################################################
-#   RUNC_V: 1.1                     ## runc version ###############################################################
-#   CRUN_V: 1.7                     ## Any one entry will work either RUNC or CRUN
+#   runtime: runc | crun | kata
+#   runtime_v: low level runtime versions runc version = 1.1; crun version = 1.7; kata version = 2.4.2                   
+#              at present snap install version for kata 2.4.2, let's keep it that way!
 #   CONTD_V: 1.6                    ## containerd version #########################################################
 #   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
 #   build_directory: "path"         ## path to the directory where you downloaded & build all k8s related source ## 
@@ -35,7 +36,8 @@ k8s:
   cni: "default"
   V: 1.25
   CRI_CTL_V: 1.25
-  CRUN_V: 1.7
+  runtime: "kata"
+  runtime_v: 2.4.2
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
   build_directory: "<path>"
@@ -53,9 +55,10 @@ following table would be helpful
 ||**NOTE:** etcd is the only binary which is getting downloaded and not getting build locally|
 |<pre><code>./setup.sh all</code></pre>| Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
 |<pre><code>./setup.sh cp</code></pre>| Only creates the control plane |
-|<pre><code>./setup.sh wrk</code></pre>| If control plane exists creates worker nodes and configure the same |
+|<pre><code>./setup.sh scale</code></pre>| If control plane exists creates or remove worker nodes and configure the same, scale command compare worker nodes at present vs required based on the number updated in k8s-config.yaml and scale up or scale down accordingly, to remove all the worker nodes just specify "0" for "nwrknd" in config, that will basically scale down to 0 |
+||**NOTE:** Change to the cni plugin, will only take effect, if you are provisioning worker nodes for the first time or scaling down to 0 and re-provisioning once again. For this specific release its only been tested with default cni which is just simple routing, other options may provide upredicted results|
 |<pre><code>./setup.sh del</code></pre>| Destroy entire cluster |
-|<pre><code>./setup.sh del wrk</code></pre>| Only remove the worker nodes, so that you can redeploy the worker nodes with changes you made, keeping the control plane intact |
+
 
 Following should be the right sequence of commands for the first time users...
 
