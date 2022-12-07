@@ -9,7 +9,7 @@
 #   cni: "default"                  ## 3 options 'default'(simple routing & no 3rd party CNI),'calico','cilium' ###
 #   V: 1.22                         ## k8s version ################################################################
 #   CRI_CTL_V: 1.25                 ## CRI version ################################################################
-#   runtime: runc | crun | kata
+#   runtime: runc | crun | kata | gvisor
 #   runtime_v: low level runtime versions runc version = 1.1; crun version = 1.7; kata version = 2.4.2                   
 #              at present snap install version for kata 2.4.2, let's keep it that way!
 #   CONTD_V: 1.6                    ## containerd version #########################################################

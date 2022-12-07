@@ -111,7 +111,6 @@ else
         if [[ "$k8s_runtime" == "crun" ]]
         then
             k8s_oci_runtime=crun
-            #sed -i 's/@k8s_oci_runtime@/crun/g' .tmp/configure-worker.sh
             echo "copying crun as runc....."
             copyFile 'wrk' '.tmp/crun_'$k8s_runtime_v'/crun' 'runc' 'k8s-node-'$1
         elif [[ "$k8s_runtime" == "runc" ]]
@@ -122,19 +121,18 @@ else
         elif [[ "$k8s_runtime" == "kata" ]]
         then
             k8s_oci_runtime=kata
-            #sed -i 's/@k8s_oci_runtime@/kata/g' .tmp/configure-worker.sh
             echo "kata will be build & configured during node configuration....."
         elif [[ "$k8s_runtime" == "gvisor" ]]
         then
+            copyFile 'wrk' '.tmp/runc_'$k8s_runtime_v'/runc' '' 'k8s-node-'$1
             k8s_oci_runtime=gvisor
-            #sed -i 's/@k8s_oci_runtime@/gvisor/g' .tmp/configure-worker.sh
             echo "gvisor will be configured during node configuration....."
         else
             echo "runtime not implmented"
         fi
     fi
 fi
-#sed -i 's/@k8s_oci_runtime@/'$k8s_oci_runtime'/g' .tmp/configure-worker.sh
+
 copyFile 'wrk' '.tmp/contd_'$k8s_CONTD_V 'containerd' 'k8s-node-'$1
 copyFile 'wrk' '.tmp/cni_'$k8s_CNI_PLUGIN_V 'cni_plugin' 'k8s-node-'$1
 

@@ -168,7 +168,10 @@ else
             fi
         elif [[ "$k8s_runtime" == "kata" ]]
         then
-            echo "runtime will be builds in the worker node itself"
+            echo "runtime will be built in the worker node itself"
+        elif [[ "$k8s_runtime" == "gvisor" ]]
+        then
+            echo "runtime will be built in the worker node itself"
         else
             echo "runtime not implmented"
         fi

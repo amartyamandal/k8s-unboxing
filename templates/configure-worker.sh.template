@@ -70,7 +70,7 @@ EOCONTD
 if [ "$k8s_runtime" = "runc" ]
 then
 cat <<EOCONTD
-chmod +x crictl runc
+chmod +x runc
 sudo mv runc /usr/local/bin/
 
 cat << EOF | sudo tee /etc/containerd/config.toml
@@ -126,7 +126,7 @@ EOCONTD
 elif [ "$k8s_runtime" = "crun" ]
 then
 cat <<EOCONTD
-chmod +x crictl runc
+chmod +x runc
 sudo mv runc /usr/local/bin/
 
 cat << EOF | sudo tee /etc/containerd/config.toml
@@ -252,20 +252,41 @@ EOCONTD
 elif [ "$k8s_runtime" = "gvisor" ]
 then
 cat <<EOCONTD
+chmod +x runc
+sudo mv runc /usr/local/bin/
+
 set -e
 ARCH=\$(uname -m)
 URL=https://storage.googleapis.com/gvisor/releases/release/latest/\${ARCH}
 wget \${URL}/runsc \${URL}/runsc.sha512 \
-  \${URL}/containerd-shim-runsc-v1 \${URL}/containerd-shim-runsc-v1.sha512
+  \${URL}/containerd-shim-runsc-v1 \${URL}/containerd-shim-runsc-v1.sha512 \
+  \${URL}/gvisor-containerd-shim \${URL}/gvisor-containerd-shim.sha512 
+
 sha512sum -c runsc.sha512 \
-  -c containerd-shim-runsc-v1.sha512
+  -c containerd-shim-runsc-v1.sha512 \
+  -c gvisor-containerd-shim.sha512 
 sudo rm -f *.sha512
-chmod a+rx runsc containerd-shim-runsc-v1
-sudo mv runsc containerd-shim-runsc-v1 /usr/local/bin
+
+#chmod a+rx containerd-shim-runsc-v1 gvisor-containerd-shim
+sudo cp containerd-shim-runsc-v1 gvisor-containerd-shim /bin/
+sudo mv runsc containerd-shim-runsc-v1 gvisor-containerd-shim /usr/local/bin
+
+sudo chown root:root /usr/local/bin/runsc /usr/local/bin/containerd-shim-runsc-v1
+sudo chmod 0755 /usr/local/bin/runsc /usr/local/bin/containerd-shim-runsc-v1
+
+
+# cat <<EOF | sudo tee /etc/containerd/runsc.toml
+# option = "value"
+# [runsc_config]
+#   flag = "value"
+# EOF
+
 cat << EOF | sudo tee /etc/containerd/config.toml
-[plugins]
-  [plugins."io.containerd.runtime.v1.linux"]
-    shim_debug = true
+version = 2
+[plugins."io.containerd.runtime.v1.linux"]
+  shim_debug = true
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+    runtime_type = "io.containerd.runc.v2"
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
     runtime_type = "io.containerd.runsc.v1"
 EOF
@@ -420,12 +441,27 @@ sudo systemctl start containerd kubelet kube-proxy
 
 sudo systemctl restart containerd kubelet kube-proxy
 EOW
+if [ "$k8s_runtime" = "gvisor" ]
+then
+cat <<EOCGRP
+sleep 10
+echo "The new systemd 247.2-2 has switched to a new unified cgroup hierarchy that is cgroup v2, which is not supported by gVisor."
+echo "switching back to cgroup v1"
+cat << EOF | sudo tee /etc/default/grub.d/cgroup.cfg
+GRUB_CMDLINE_LINUX=systemd.unified_cgroup_hierarchy=false
+EOF
+sudo update-grub
+sudo reboot now
+EOCGRP
+fi
 #kubectl get nodes --kubeconfig admin.kubeconfig
 #sudo journalctl -u containerd --since today --no-pager --follow
 #sudo systemctl restart containerd kubelet kube-proxy
 #sudo systemctl status containerd kubelet kube-proxy
 #sudo ctr plugins ls
+#crictl ps
 #####################test for kata ############
 # image="docker.io/library/busybox:latest"
 # sudo ctr image pull "$image"
 # sudo ctr run --runtime "io.containerd.kata.v2" --rm -t "$image" test-kata uname -r
+
