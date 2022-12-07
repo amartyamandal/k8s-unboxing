@@ -8,28 +8,28 @@ Once download first thing you would like to do is to update k8s-config.yaml
 <pre><code>
 ## global definitions
 # k8s:
-#   provider: 'libvirt'             ## two options 'libvirt' or 'virtualbox'#######################################
+#   provider: 'libvirt'       ## two options 'libvirt' or 'virtualbox'#######################################
 #   domain: 'k8s.local'
-#   ip_start: 192.168.121.128       ## This is required for libvirt provider to create a subnet ###################
-#   ip_end: 192.168.121.254         ## for virtualbox its use the default vboxnet0 ################################
-#   ncpnd: 1                        ## number of master nodes, load balancer will balanced the traffic to kubeapi##
-#   nwrknd: 2                       ## number of worker nodes #####################################################
-#   cni: "default"                  ## 3 options 'default'(simple routing & no 3rd party CNI),'calico','cilium' ###
-#   V: 1.22                         ## k8s version ################################################################
-#   CRI_CTL_V: 1.25                 ## CRI version ################################################################
+#   ip_start: 192.168.121.128 ## This is required for libvirt provider to create a subnet ###################
+#   ip_end: 192.168.121.254   ## for virtualbox its use the default vboxnet0 ################################
+#   ncpnd: 1                  ## number of master nodes, load balancer will balanced the traffic to kubeapi##
+#   nwrknd: 2                 ## number of worker nodes #####################################################
+#   cni: "default"            ## 3 options 'default'(simple routing & no 3rd party CNI),'calico','cilium' ###
+#   V: 1.22                   ## k8s version ################################################################
+#   CRI_CTL_V: 1.25           ## CRI version ################################################################
 #   runtime: runc | crun | kata | gvisor
 #   runtime_v: low level runtime versions runc version = 1.1; crun version = 1.7; kata version = 2.4.2                  
-#              gvisor version =  20221128.0 at present snap install version for kata 2.4.2, let's keep it that way!
-#              for kata & gvisor runtime version has no effect, because it is always getting the latest source  
-#              during provisioning of the nodes, its not ideal, but at this moment, either of this special runtime  
-#              not stable, documentation not clear, so its better to do the runtime build and configuration inside 
-#              the node, remember its a test bench for kubernetes
-#   CONTD_V: 1.6                    ## containerd version #########################################################
-#   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
-#   build_directory: "<path>"       ## path to the directory where you downloaded & build all k8s related source ## 
-# node:                             ## any node attrebutes can be configured here #################################      
-#   private_key_name: "<ssh_key>"   ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
-#   os: "generic/ubuntu2204"        ## os ubuntu is the only flavour which has been tested
+#        gvisor version =  20221128.0 at present snap install version for kata 2.4.2, let's keep it that way!
+#        for kata & gvisor runtime version has no effect, because it is always getting the latest source  
+#        during provisioning of the nodes, its not ideal, but at this moment, either of this special runtime  
+#        not stable, documentation not clear, so its better to do the runtime build and configuration inside 
+#        the node, remember its a test bench for kubernetes
+#   CONTD_V: 1.6             ## containerd version #########################################################
+#   CNI_PLUGIN_V: 1.1        ## cni plugin version #########################################################
+#   build_directory: "<path>"## path to the directory where you downloaded & build all k8s related source ## 
+# node:                          ## any node attrebutes can be configured here ##########################      
+#   private_key_name: "<ssh_key>"## ssh key name to ssh into the nodes,expect key in default ~/.ssh path 
+#   os: "generic/ubuntu2204"     ## os ubuntu is the only flavour which has been tested
 
 
 k8s:
