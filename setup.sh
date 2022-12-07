@@ -33,7 +33,6 @@ else
         printf "./setup_cp.sh\n" >> ./run.sh
         printf "./setup_end.sh\n" >> ./run.sh
         printf "./setup_nd.sh\n" >> ./run.sh
-        printf "./scripts/setup-cni-plugin-dns.sh\n" >> ./run.sh
     elif [[ $1 == cp ]]
     then
         printf "./setup_start.sh\n" >> ./run.sh

@@ -111,6 +111,10 @@ function validate_yaml_input {
     then
         echo "k8s version not supplied"
         exit 1
+    elif [ "$k8s_provider" = "virtualbox" ]
+    then
+        echo "this release only support libvirt"
+        exit 1
     fi
     if [ -z "${k8s_domain// }" ]
     then
