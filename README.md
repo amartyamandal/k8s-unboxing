@@ -135,54 +135,14 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 </code></pre>
 
-# Pre-requisites kata
+# Notes on kata
 [kata](https://github.com/kata-containers/kata-containers) going through some major changes and documentation is hard to follow.
 Ideally kata runtime should be build and separately and copied to specific node, it is only required to check if node is capable of creating a Kata Container.
 Ideally these checks should not be part of node provisioning, but for the clarity of understanding, I am building kata runtime from source in the node itself.
-This will change later to more standard approach.But for the time being following are the commands getting executed to configure kata-runtime!
-<pre><code>
-  echo "check for virtualization compatibility"
-  egrep -c '(vmx|svm)' /proc/cpuinfo
-  grep -E --color '(vmx|svm)' /proc/cpuinfo
+This will change later to more standard approach.
 
-  echo "Installing golang and preparing node to build and install kata runtime"
-  wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
-  sha256sum go1.19.3.linux-amd64.tar.gz
-  sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
-  sudo cp /usr/local/go/bin/go /usr/local/bin/
-  mkdir -p $HOME/go_projects/{bin,src,pkg}
-
-  export GOROOT=/usr/local/bin 
-  export GOPATH=$HOME/go_projects
-  echo "export GOROOT=/usr/local/bin" >> ~/.profile
-  echo "export GOPATH=\$HOME/go_projects" >> ~/.profile 
-
-  source ~/.profile
-  echo $PATH
-  go version
-
-  sudo apt update
-  sudo apt-get install build-essential rustc -y
-
-
-  cd $GOPATH/src
-  sudo git clone https://github.com/kata-containers/kata-containers.git
-  pushd $HOME/go_projects/src/kata-containers/src/runtime
-  sudo make && sudo -E "PATH=$PATH" make install
-  sudo mkdir -p /etc/kata-containers/
-  popd
-
-  cd ~
-
-  echo "crapy hack using snap to copy kata-containers configurations"
-  sudo snap install kata-containers --stable --classic
-  sudo cp /snap/kata-containers/current/usr/share/defaults/kata-containers/configuration.toml /etc/kata-containers/
-  sudo ln -sf /snap/kata-containers/current/usr/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
-
-  echo "checking kata-runtime"
-  sudo kata-runtime check
-
-  echo "hack to resolve  cgroup mountpoint does not exist issue"
-  sudo mkdir /sys/fs/cgroup/systemd
-  sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
-</code></pre>
+# Notes on gvisor
+[gvisor](https://github.com/google/gvisor) has a major limitation with ubuntu.
+The new systemd 247.2-2 has switched to a new "unified" cgroup hierarchy (i.e. cgroup v2) which is not supported by gVisor.
+Ubuntu version 21.10 & above affected.
+Workaround is to switching back to cgroup v1 and that's why a node created with gvisor runtime will reboot to reflect the downgrade 
