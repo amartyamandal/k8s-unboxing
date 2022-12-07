@@ -21,6 +21,7 @@
 #   build_directory: "<path>"       ## path to the directory where you downloaded & build all k8s related source ## 
 # node:                             ## any node attrebutes can be configured here #################################      
 #   private_key_name: "<ssh_key>"   ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
+#   os: "generic/ubuntu2204"        ## os ubuntu is the only flavour which has been tested
 
 k8s:
   provider: "libvirt"
@@ -34,10 +35,10 @@ k8s:
   CRI_CTL_V: 1.25
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
-  build_directory: "/home/vindpro/github/k8s_build_lab"
+  build_directory: "path/to/build_directory"
   runtime: "gvisor"
   runtime_v: 2.4
 node:
-  private_key_name: "vindpro_local"
+  private_key_name: "ssh_key_name"
   os: "generic/ubuntu2204"
 
