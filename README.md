@@ -3,7 +3,7 @@ Generally I use kvm in my home lab, poor man's hypervisor. You need some sort of
 
 Purpose of this collection of scripts is to let you create a k8s cluster with an api load balancer with both libvirt (kvm) and virtualbox.
 
-Once download first thing you would like to do is to update k8s-config.yaml
+Once download first thing you would like to do is to update k8s-config.yaml, watch following youtube video
 
 [![Kubernetes cluster with multiple runtimes runc, crun, kata & gvisor](https://img.youtube.com/vi/nV2UCE5iWAU/default.jpg)](https://www.youtube.com/watch?v=nV2UCE5iWAU)
 
