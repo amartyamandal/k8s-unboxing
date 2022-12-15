@@ -3,27 +3,36 @@ Generally I use kvm in my home lab, poor man's hypervisor. You need some sort of
 
 Purpose of this collection of scripts is to let you create a k8s cluster with an api load balancer with both libvirt (kvm) and virtualbox.
 
-Once download first thing you would like to do is to update k8s-config.yaml
+Once download first thing you would like to do is to update k8s-config.yaml, watch following youtube video
+
+[![Kubernetes cluster with multiple runtimes runc, crun, kata & gvisor](https://img.youtube.com/vi/nV2UCE5iWAU/default.jpg)](https://www.youtube.com/watch?v=nV2UCE5iWAU)
 
 <pre><code>
 ## global definitions
 # k8s:
-#   provider: 'libvirt'             ## two options 'libvirt' or 'virtualbox'#######################################
+#   provider: 'libvirt'       ## two options 'libvirt' or 'virtualbox'#######################################
 #   domain: 'k8s.local'
-#   ip_start: 192.168.121.128       ## This is required for libvirt provider to create a subnet ###################
-#   ip_end: 192.168.121.254         ## for virtualbox its use the default vboxnet0 ################################
-#   ncpnd: 1                        ## number of master nodes, load balancer will balanced the traffic to kubeapi##
-#   nwrknd: 2                       ## number of worker nodes #####################################################
-#   cni: "default"                  ## 3 options 'default'(simple routing & no 3rd party CNI),'calico','cilium' ###
-#   V: 1.22                         ## k8s version ################################################################
-#   CRI_CTL_V: 1.25                 ## CRI version ################################################################
-#   RUNC_V: 1.1                     ## runc version ###############################################################
-#   CRUN_V: 1.7                     ## Any one entry will work either RUNC or CRUN
-#   CONTD_V: 1.6                    ## containerd version #########################################################
-#   CNI_PLUGIN_V: 1.1               ## cni plugin version #########################################################
-#   build_directory: "path"         ## path to the directory where you downloaded & build all k8s related source ## 
-# node:                             ## any node attrebutes can be configured here #################################      
-#   private_key_name: "ssh_key"     ## ssh key name to ssh into the nodes,expect key in default ~/.ssh path #######
+#   ip_start: 192.168.121.128 ## This is required for libvirt provider to create a subnet ###################
+#   ip_end: 192.168.121.254   ## for virtualbox its use the default vboxnet0 ################################
+#   ncpnd: 1                  ## number of master nodes, load balancer will balanced the traffic to kubeapi##
+#   nwrknd: 2                 ## number of worker nodes #####################################################
+#   cni: "default"            ## 3 options 'default'(simple routing & no 3rd party CNI),'calico','cilium' ###
+#   V: 1.22                   ## k8s version ################################################################
+#   CRI_CTL_V: 1.25           ## CRI version ################################################################
+#   runtime: runc | crun | kata | gvisor
+#   runtime_v: low level runtime versions runc version = 1.1; crun version = 1.7; kata version = 2.4.2                  
+#        gvisor version =  20221128.0 at present snap install version for kata 2.4.2, let's keep it that way!
+#        for kata & gvisor runtime version has no effect, because it is always getting the latest source  
+#        during provisioning of the nodes, its not ideal, but at this moment, either of this special runtime  
+#        not stable, documentation not clear, so its better to do the runtime build and configuration inside 
+#        the node, remember its a test bench for kubernetes
+#   CONTD_V: 1.6             ## containerd version #########################################################
+#   CNI_PLUGIN_V: 1.1        ## cni plugin version #########################################################
+#   build_directory: "<path>"## path to the directory where you downloaded & build all k8s related source ## 
+# node:                          ## any node attrebutes can be configured here ##########################      
+#   private_key_name: "<ssh_key>"## ssh key name to ssh into the nodes,expect key in default ~/.ssh path 
+#   os: "generic/ubuntu2204"     ## os ubuntu is the only flavour which has been tested
+
 
 k8s:
   provider: "libvirt"
@@ -35,7 +44,8 @@ k8s:
   cni: "default"
   V: 1.25
   CRI_CTL_V: 1.25
-  CRUN_V: 1.7
+  runtime: "kata"
+  runtime_v: 2.4.2
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
   build_directory: "<path>"
@@ -53,9 +63,10 @@ following table would be helpful
 ||**NOTE:** etcd is the only binary which is getting downloaded and not getting build locally|
 |<pre><code>./setup.sh all</code></pre>| Create control plane vm's, load balancer and worker nodes based on the k8s-config configuration and install all the binaries |
 |<pre><code>./setup.sh cp</code></pre>| Only creates the control plane |
-|<pre><code>./setup.sh wrk</code></pre>| If control plane exists creates worker nodes and configure the same |
+|<pre><code>./setup.sh scale</code></pre>| If control plane exists creates or remove worker nodes and configure the same, scale command compare worker nodes at present vs required based on the number updated in k8s-config.yaml and scale up or scale down accordingly, to remove all the worker nodes just specify "0" for "nwrknd" in config, that will basically scale down to 0 |
+||**NOTE:** Change to the cni plugin, will only take effect, if you are provisioning worker nodes for the first time or scaling down to 0 and re-provisioning once again. For this specific release its only been tested with default cni which is just simple routing, other options may provide upredicted results|
 |<pre><code>./setup.sh del</code></pre>| Destroy entire cluster |
-|<pre><code>./setup.sh del wrk</code></pre>| Only remove the worker nodes, so that you can redeploy the worker nodes with changes you made, keeping the control plane intact |
+
 
 Following should be the right sequence of commands for the first time users...
 
@@ -125,3 +136,15 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 </code></pre>
+
+# Notes on kata
+[kata](https://github.com/kata-containers/kata-containers) going through some major changes and documentation is hard to follow.
+Ideally kata runtime should be build and separately and copied to specific node, it is only required to check if node is capable of creating a Kata Container.
+Ideally these checks should not be part of node provisioning, but for the clarity of understanding, I am building kata runtime from source in the node itself.
+This will change later to more standard approach.
+
+# Notes on gvisor
+[gvisor](https://github.com/google/gvisor) has a major limitation with ubuntu.
+The new systemd 247.2-2 has switched to a new "unified" cgroup hierarchy (i.e. cgroup v2) which is not supported by gVisor.
+Ubuntu version 21.10 & above affected.
+Workaround is to switching back to cgroup v1 and that's why a node created with gvisor runtime will reboot to reflect the downgrade 

@@ -1,29 +1,37 @@
 #!/bin/bash
 source ./configure/functions/utility.sh
 
-cpcount=$(getndCount cp $k8s_provider)
-wrkcount=$(getndCount wrk $k8s_provider)
-lbcount=$(getndCount lb $k8s_provider)
-
-if [[ $cpcount -gt 0 ]] && [ $lbcount -gt 0 ] && [ $wrkcount -eq 0 ]
+pcpcnt=$(getndCount cp $k8s_provider)
+pwrkcnt=$(getndCount wrk $k8s_provider)
+plbcnt=$(getndCount lb $k8s_provider)
+finalndcnt=$k8s_nwrknd
+requiredndcnt=0
+if [[ $pcpcnt -gt 0 ]] && [ $plbcnt -gt 0 ] 
 then
-    ./scripts/setup-workers.sh
-    sleep 10
-    ./setup_end.sh
-    ./scripts/setup-cni-plugin-dns.sh
-elif [[ $cpcount -gt 0 ]] && [ $lbcount -gt 0 ] && [ $wrkcount -gt 0 ]
-then
-    if [ -z "$1" ]
+    echo "CP exists ..."
+    
+    if [[ $finalndcnt -gt $pwrkcnt ]]
     then
-        echo "Cluster Exists, worker nodes exists, use scale to scale out or in"
-    elif [[ $1 == redo ]]
+        requiredndcnt="$(($finalndcnt-$pwrkcnt))"
+        echo "Scaling up by "$requiredndcnt
+        ./scripts/setup-workers.sh $requiredndcnt
+    elif [[ $finalndcnt -lt $pwrkcnt ]]
     then
-        ./destroy.sh $k8s_provider wrk
-        sleep 30
-        ./scripts/setup-workers.sh
-        sleep 10
+        requiredndcnt="$(($pwrkcnt-$finalndcnt))"
+        echo "Scaling down by "$requiredndcnt
+        ./destroy.sh $k8s_provider wrk $requiredndcnt
+    elif [[ $finalndcnt -eq $pwrkcnt ]]
+    then
+        echo "scaling not required"
+        exit 1
+    fi
+    echo "present="$pwrkcnt "reuired="$requiredndcnt
+    if [[ $pwrkcnt -eq 0 ]] && [[ $requiredndcnt -gt 0 ]]
+    then
+        echo "seeting up coredns & cni======================="
         ./scripts/setup-cni-plugin-dns.sh
     fi
 else
-    echo "no controlplan exists"
-fi
+    echo "CP do not exists operation can't proceed further..."
+    exit 1
+fi      

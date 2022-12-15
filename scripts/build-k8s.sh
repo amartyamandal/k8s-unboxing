@@ -3,10 +3,10 @@ project_path=$(eval pwd)
 
 DIR_KUBE=$project_path/.tmp/k8s_$k8s_V
 DIR_CRI_CTL=$project_path/.tmp/crictl_$k8s_CRI_CTL_V
-DIR_RUNC=$project_path/.tmp/runc_$k8s_RUNC_V
+
 DIR_CONTD=$project_path/.tmp/contd_$k8s_CONTD_V
 DIR_CNI_PLUGIN=$project_path/.tmp/cni_$k8s_CNI_PLUGIN_V
-DIR_CRUN=$project_path/.tmp/crun_$k8s_CRUN_V
+
 
 if [ -d "$DIR_KUBE" ];
 then
@@ -63,33 +63,6 @@ else
    
 fi
 
-if [ -z "${k8s_RUNC_V// }" ]
-then
-    echo "You opted out for runc"
-else
-    if [ -d "$DIR_RUNC" ];
-    then
-        echo "runc binaries exists for version "$k8s_RUNC_V
-    else
-        echo "build & copy runc binaries for version "$k8s_RUNC_V
-        
-        runc_path=$k8s_build_directory/runc 
-        runc_binary_path=$runc_path
-        
-
-        cd $runc_path
-
-        git checkout release-$k8s_RUNC_V
-        sudo make
-
-        sudo mkdir $DIR_RUNC
-        #cd $runc_binary_path
-        
-        sudo cp $runc_binary_path/runc $DIR_RUNC/runc
-    
-    fi
-fi
-
 if [ -d "$DIR_CONTD" ];
 then
     echo "containerd binaries exists for version "$k8s_CONTD_V
@@ -133,33 +106,75 @@ else
    
 fi
 
-if [ -z "${k8s_CRUN_V// }" ]
+if [ -z "${k8s_runtime// }" ]
 then
-    echo "You opted out for crun"
+    echo "No runtime specified"
 else
-    if [ -d "$DIR_CRUN" ];
+    if [ -z "${k8s_runtime_v// }" ]
     then
-        echo "crun binaries exists for version "$k8s_CRUN_V
+        echo "runtime version not supplied"
     else
-        echo "build & copy crun binaries for main "
-    
-        
-        crun_path=$k8s_build_directory/crun
-        crun_binary_path=$crun_path
-        
-        #echo $crun_binary_path
+        if [[ "$k8s_runtime" == "crun" ]]
+        then
+            DIR_CRUN=$project_path/.tmp/crun_$k8s_runtime_v
+            if [ -d "$DIR_CRUN" ];
+            then
+                echo "crun binaries exists for version "$k8s_runtime_v
+            else
+                echo "build & copy crun binaries for main "
+            
+                
+                crun_path=$k8s_build_directory/crun
+                crun_binary_path=$crun_path
+                
+                #echo $crun_binary_path
 
-        cd $crun_path
-        
+                cd $crun_path
+                
 
-        git checkout $k8s_CRUN_V
-        sudo ./autogen.sh
-        sudo ./configure  #--enable-shared
-        sudo make
+                git checkout $k8s_runtime_v
+                sudo ./autogen.sh
+                sudo ./configure  #--enable-shared
+                sudo make
 
-        sudo mkdir $DIR_CRUN
-        
-        
-        sudo cp $crun_binary_path/crun $DIR_CRUN/crun
+                sudo mkdir $DIR_CRUN
+                
+                
+                sudo cp $crun_binary_path/crun $DIR_CRUN/crun
+            fi
+        elif [[ "$k8s_runtime" == "runc" ]]
+        then
+            DIR_RUNC=$project_path/.tmp/runc_$k8s_runtime_v
+            if [ -d "$DIR_RUNC" ];
+            then
+                echo "runc binaries exists for version "$k8s_runtime_v
+            else
+                echo "build & copy runc binaries for version "$k8s_runtime_v
+                
+                runc_path=$k8s_build_directory/runc 
+                runc_binary_path=$runc_path
+                
+
+                cd $runc_path
+
+                git checkout release-$k8s_runtime_v
+                sudo make
+
+                sudo mkdir $DIR_RUNC
+                #cd $runc_binary_path
+                
+                sudo cp $runc_binary_path/runc $DIR_RUNC/runc
+            
+            fi
+        elif [[ "$k8s_runtime" == "kata" ]]
+        then
+            echo "runtime will be built in the worker node itself"
+        elif [[ "$k8s_runtime" == "gvisor" ]]
+        then
+            echo "runtime will be built in the worker node itself"
+        else
+            echo "runtime not implmented"
+        fi
     fi
 fi
+

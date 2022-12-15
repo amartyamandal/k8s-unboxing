@@ -1,6 +1,4 @@
 #!/bin/bash
-cat  << EOF
-#!/bin/bash
 echo "install the OS dependencies"
 sudo apt update
 sudo sysctl net.ipv4.conf.all.forwarding=1
@@ -25,13 +23,12 @@ sudo mv containerd/* /bin/
 sudo mv cni_plugin/* /opt/cni/bin/
 chmod +x crictl kubectl kube-proxy kubelet
 sudo mv crictl kubectl kube-proxy kubelet /usr/local/bin/
-EOF
+
 ###############################################
-if [ "$k8s_cni" = "default" ]
+if [ "@k8s_cni@" = "default" ]
 then
-cat <<EOCNI
-echo "Configure CNI Networking for basic routing"
-POD_CIDR=\$(cat \$HOME/pod_cidr.txt)
+  echo "Configure CNI Networking for basic routing"
+  POD_CIDR=$(cat $HOME/pod_cidr.txt)
 
 cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
 {
@@ -44,7 +41,7 @@ cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
     "ipam": {
         "type": "host-local",
         "ranges": [
-          [{"subnet": "\${POD_CIDR}"}]
+          [{"subnet": "${POD_CIDR}"}]
         ],
         "routes": [{"dst": "0.0.0.0/0"}]
     }
@@ -57,20 +54,17 @@ cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
     "type": "loopback"
 }
 EOF
-EOCNI
 fi
 #######hack to resolve  "cgroup mountpoint does not exist" issue##########
 # sudo mkdir /sys/fs/cgroup/systemd
 # sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
 ##########################################################################
-cat <<EOCONTD
 echo "Configure containerd"
 sudo mkdir -p /etc/containerd/
-EOCONTD
-if [ "$k8s_runtime" = "runc" ]
+if [ "@k8s_oci_runtime@" = "runc" ]
 then
-cat <<EOCONTD
-chmod +x runc
+
+chmod +x crictl runc
 sudo mv runc /usr/local/bin/
 
 cat << EOF | sudo tee /etc/containerd/config.toml
@@ -122,11 +116,10 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             base_image_size = ""
             async_remove = false
 EOF
-EOCONTD
-elif [ "$k8s_runtime" = "crun" ]
+elif [ "@k8s_oci_runtime@" = "crun" ]
 then
-cat <<EOCONTD
-chmod +x runc
+
+chmod +x crictl runc
 sudo mv runc /usr/local/bin/
 
 cat << EOF | sudo tee /etc/containerd/config.toml
@@ -178,54 +171,54 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             base_image_size = ""
             async_remove = false
 EOF
-EOCONTD
-elif [ "$k8s_runtime" = "kata" ]
+elif [ "@k8s_oci_runtime@" = "kata" ]
 then
-cat <<EOCONTD
-echo "check for virtualization compatibility"
-egrep -c '(vmx|svm)' /proc/cpuinfo
-grep -E --color '(vmx|svm)' /proc/cpuinfo
+  #chmod +x crictl runc
+  #sudo mv runc /usr/local/bin/
+  echo "check for virtualization compatibility"
+  egrep -c '(vmx|svm)' /proc/cpuinfo
+  grep -E --color '(vmx|svm)' /proc/cpuinfo
 
-echo "Installing golang and preparing node to build and install kata runtime"
-wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
-sha256sum go1.19.3.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
-sudo cp /usr/local/go/bin/go /usr/local/bin/
-mkdir -p \$HOME/go_projects/{bin,src,pkg}
+  echo "Installing golang and preparing node to build and install kata runtime"
+  wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
+  sha256sum go1.19.3.linux-amd64.tar.gz
+  sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
+  sudo cp /usr/local/go/bin/go /usr/local/bin/
+  mkdir -p $HOME/go_projects/{bin,src,pkg}
 
-export GOROOT=/usr/local/bin 
-export GOPATH=\$HOME/go_projects
-echo "export GOROOT=/usr/local/bin" >> ~/.profile
-echo "export GOPATH=\$HOME/go_projects" >> ~/.profile 
+  export GOROOT=/usr/local/bin 
+  export GOPATH=$HOME/go_projects
+  echo "export GOROOT=/usr/local/bin" >> ~/.profile
+  echo "export GOPATH=\$HOME/go_projects" >> ~/.profile 
 
-source ~/.profile
-echo \$PATH
-go version
+  source ~/.profile
+  echo $PATH
+  go version
 
-sudo apt update
-sudo apt-get install build-essential rustc -y
+  sudo apt update
+  sudo apt-get install build-essential rustc -y
 
 
-cd \$GOPATH/src
-sudo git clone https://github.com/kata-containers/kata-containers.git
-pushd \$HOME/go_projects/src/kata-containers/src/runtime
-sudo make && sudo -E "PATH=\$PATH" make install
-sudo mkdir -p /etc/kata-containers/
-popd
+  cd $GOPATH/src
+  sudo git clone https://github.com/kata-containers/kata-containers.git
+  pushd $HOME/go_projects/src/kata-containers/src/runtime
+  sudo make && sudo -E "PATH=$PATH" make install
+  sudo mkdir -p /etc/kata-containers/
+  popd
 
-cd ~
+  cd ~
 
-echo "crapy hack using snap to copy kata-containers configurations"
-sudo snap install kata-containers --stable --classic
-sudo cp /snap/kata-containers/current/usr/share/defaults/kata-containers/configuration.toml /etc/kata-containers/
-sudo ln -sf /snap/kata-containers/current/usr/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
+  echo "crapy hack using snap to copy kata-containers configurations"
+  sudo snap install kata-containers --stable --classic
+  sudo cp /snap/kata-containers/current/usr/share/defaults/kata-containers/configuration.toml /etc/kata-containers/
+  sudo ln -sf /snap/kata-containers/current/usr/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2
 
-echo "checking kata-runtime"
-sudo kata-runtime check
+  echo "checking kata-runtime"
+  sudo kata-runtime check
 
-echo "hack to resolve  cgroup mountpoint does not exist issue"
-sudo mkdir /sys/fs/cgroup/systemd
-sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+  echo "hack to resolve  cgroup mountpoint does not exist issue"
+  sudo mkdir /sys/fs/cgroup/systemd
+  sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
 
 #*****************************************************
 cat << EOF | sudo tee /etc/containerd/config.toml
@@ -248,52 +241,28 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             max_conf_num = 1
             conf_template = ""
 EOF
-EOCONTD
-elif [ "$k8s_runtime" = "gvisor" ]
+elif [ "@k8s_oci_runtime@" = "gvisor" ]
 then
-cat <<EOCONTD
-chmod +x runc
-sudo mv runc /usr/local/bin/
-
-set -e
-ARCH=\$(uname -m)
-URL=https://storage.googleapis.com/gvisor/releases/release/latest/\${ARCH}
-wget \${URL}/runsc \${URL}/runsc.sha512 \
-  \${URL}/containerd-shim-runsc-v1 \${URL}/containerd-shim-runsc-v1.sha512 \
-  \${URL}/gvisor-containerd-shim \${URL}/gvisor-containerd-shim.sha512 
-
-sha512sum -c runsc.sha512 \
-  -c containerd-shim-runsc-v1.sha512 \
-  -c gvisor-containerd-shim.sha512 
-sudo rm -f *.sha512
-
-#chmod a+rx containerd-shim-runsc-v1 gvisor-containerd-shim
-sudo cp containerd-shim-runsc-v1 gvisor-containerd-shim /bin/
-sudo mv runsc containerd-shim-runsc-v1 gvisor-containerd-shim /usr/local/bin
-
-sudo chown root:root /usr/local/bin/runsc /usr/local/bin/containerd-shim-runsc-v1
-sudo chmod 0755 /usr/local/bin/runsc /usr/local/bin/containerd-shim-runsc-v1
-
-
-# cat <<EOF | sudo tee /etc/containerd/runsc.toml
-# option = "value"
-# [runsc_config]
-#   flag = "value"
-# EOF
-
+  set -e
+  ARCH=$(uname -m)
+  URL=https://storage.googleapis.com/gvisor/releases/release/latest/${ARCH}
+  wget ${URL}/runsc ${URL}/runsc.sha512 \
+    ${URL}/containerd-shim-runsc-v1 ${URL}/containerd-shim-runsc-v1.sha512
+  sha512sum -c runsc.sha512 \
+    -c containerd-shim-runsc-v1.sha512
+  sudo rm -f *.sha512
+  chmod a+rx runsc containerd-shim-runsc-v1
+  sudo mv runsc containerd-shim-runsc-v1 /usr/local/bin
 cat << EOF | sudo tee /etc/containerd/config.toml
 version = 2
 [plugins."io.containerd.runtime.v1.linux"]
   shim_debug = true
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-    runtime_type = "io.containerd.runc.v2"
-  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-    runtime_type = "io.containerd.runsc.v1"
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
 EOF
-EOCONTD
 fi
 
-cat <<EOW
+
 ####################################################
 echo "Create the containerd.service systemd unit file"
 cat <<EOF | sudo tee /etc/systemd/system/containerd.service
@@ -320,18 +289,14 @@ WantedBy=multi-user.target
 EOF
 #######################################################
 echo "Configure the Kubelet"
-MACHINE_NAME=\$(echo \${HOSTNAME} | cut -d"." -f1)
-sudo cp certs/\${MACHINE_NAME}-key.pem certs/\${MACHINE_NAME}.pem /var/lib/kubelet/
-sudo cp kubeconfigs/\${MACHINE_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
+MACHINE_NAME=$(echo ${HOSTNAME} | cut -d"." -f1)
+sudo cp certs/${MACHINE_NAME}-key.pem certs/${MACHINE_NAME}.pem /var/lib/kubelet/
+sudo cp kubeconfigs/${MACHINE_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
 sudo cp certs/ca.pem /var/lib/kubernetes/
 ##########################################################
-EOW
-cat <<EOW
 echo "Create the kubelet-config.yaml configuration file"
-EOW
-if [ "$k8s_cni" = "default" ]
+if [ "@k8s_cni@" = "default" ]
 then
-cat <<EOW
 cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
@@ -347,15 +312,13 @@ authorization:
 clusterDomain: "cluster.local"
 clusterDNS:
   - "10.32.0.10"
-podCIDR: "\${POD_CIDR}"
+podCIDR: "${POD_CIDR}"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
-tlsCertFile: "/var/lib/kubelet/\${MACHINE_NAME}.pem"
-tlsPrivateKeyFile: "/var/lib/kubelet/\${MACHINE_NAME}-key.pem"
+tlsCertFile: "/var/lib/kubelet/${MACHINE_NAME}.pem"
+tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
 EOF
-EOW
 else
-cat <<EOW
 cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
@@ -376,13 +339,11 @@ runtimeRequestTimeout: "15m"
 tlsCertFile: "/var/lib/kubelet/${MACHINE_NAME}.pem"
 tlsPrivateKeyFile: "/var/lib/kubelet/${MACHINE_NAME}-key.pem"
 EOF
-EOW
 fi
 ############################################################
 # --network-plugin=cni \\
 # --image-pull-progress-deadline=2m \\
 # --container-runtime=remote \\
-cat <<EOW
 echo "Create the kubelet.service systemd unit file"
 cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
 [Unit]
@@ -440,28 +401,12 @@ sudo systemctl enable containerd kubelet kube-proxy --now
 sudo systemctl start containerd kubelet kube-proxy
 
 sudo systemctl restart containerd kubelet kube-proxy
-EOW
-if [ "$k8s_runtime" = "gvisor" ]
-then
-cat <<EOCGRP
-sleep 10
-echo "The new systemd 247.2-2 has switched to a new unified cgroup hierarchy that is cgroup v2, which is not supported by gVisor."
-echo "switching back to cgroup v1"
-cat << EOF | sudo tee /etc/default/grub.d/cgroup.cfg
-GRUB_CMDLINE_LINUX=systemd.unified_cgroup_hierarchy=false
-EOF
-sudo update-grub
-sudo reboot now
-EOCGRP
-fi
 #kubectl get nodes --kubeconfig admin.kubeconfig
 #sudo journalctl -u containerd --since today --no-pager --follow
 #sudo systemctl restart containerd kubelet kube-proxy
 #sudo systemctl status containerd kubelet kube-proxy
 #sudo ctr plugins ls
-#crictl ps
 #####################test for kata ############
 # image="docker.io/library/busybox:latest"
 # sudo ctr image pull "$image"
 # sudo ctr run --runtime "io.containerd.kata.v2" --rm -t "$image" test-kata uname -r
-

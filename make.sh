@@ -40,18 +40,6 @@ else
     echo "downloading cri-tool source"
     git clone https://github.com/kubernetes-sigs/cri-tools.git
 fi
-if [ -z "${k8s_RUNC_V// }" ]
-then
-    echo "You opted out for runc"
-else
-    if [ -d "$repo_RUNC" ];
-    then
-        echo "runc repo exists - delete local folder to download again"
-    else
-        echo "downloading runc source"
-        git clone https://github.com/opencontainers/runc.git
-    fi
-fi
 if [ -d "$repo_CONTD" ];
 then
     echo "containerd repo exists - delete local folder to download again"
@@ -70,17 +58,43 @@ fi
 # sudo apt-get install -y make git gcc build-essential pkgconf libtool \
 # libsystemd-dev libprotobuf-c-dev libcap-dev libseccomp-dev libyajl-dev \
 # libgcrypt20-dev go-md2man autoconf python3 automake
-if [ -z "${k8s_CRUN_V// }" ]
+if [ -z "${k8s_runtime// }" ]
 then
-    echo "You opted out for crun"
+    echo "No runtime specified"
 else
-    if [ -d "$repo_CRUN" ];
+    if [ -z "${k8s_runtime_v// }" ]
     then
-        echo "crun repo exists - delete local folder to download again"
+        echo "runtime version not supplied"
     else
-        echo "downloading crun source"
-        git clone https://github.com/containers/crun.git
+        if [[ "$k8s_runtime" == "crun" ]]
+        then
+            if [ -d "$repo_CRUN" ];
+            then
+                echo "crun repo exists - delete local folder to download again"
+            else
+                echo "downloading crun source"
+                git clone https://github.com/containers/crun.git
+            fi
+        elif [[ "$k8s_runtime" == "runc" ]]
+        then
+            if [ -d "$repo_RUNC" ];
+            then
+                echo "runc repo exists - delete local folder to download again"
+            else
+                echo "downloading runc source"
+                git clone https://github.com/opencontainers/runc.git
+            fi
+        elif [[ "$k8s_runtime" == "kata" ]]
+        then
+            echo "runtime will be compiled in the worker node itself"
+        elif [[ "$k8s_runtime" == "gvisor" ]]
+        then
+            echo "runtime will be compiled in the worker node itself"
+        else
+            echo "runtime not implmented"
+        fi
     fi
 fi
+
 
 cd $project_path
