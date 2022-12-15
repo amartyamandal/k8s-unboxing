@@ -111,10 +111,10 @@ function validate_yaml_input {
     then
         echo "k8s version not supplied"
         exit 1
-    elif [ "$k8s_provider" = "virtualbox" ]
-    then
-        echo "this release only support libvirt"
-        exit 1
+    # elif [ "$k8s_provider" = "virtualbox" ]
+    # then
+    #     echo "this release only support libvirt"
+    #     exit 1
     fi
     if [ -z "${k8s_domain// }" ]
     then
@@ -294,11 +294,21 @@ function validateInput() {
 
 function getvmToRemove() {
     declare -a vm_array=()
-    for vm in $(virsh list | grep k8s-node | awk '{print $2}')
-    do
-        vm_name=$(echo "$vm")
-        vm_array+=("$vm_name")
-    done
+    if [[ $k8s_provider == "libvirt" ]]
+    then
+        for vm in $(virsh list | grep k8s-node | awk '{print $2}')
+        do
+            vm_name=$(echo "$vm")
+            vm_array+=("$vm_name")
+        done
+    elif [[ $k8s_provider == "virtualbox" ]]
+    then
+        for vm in $(VBoxManage list vms | grep k8s-node | awk '{print $1}' | cut -c 2-29)
+        do
+            vm_name=$(echo "$vm")
+            vm_array+=("$vm_name")
+        done
+    fi
     
     max=0
     local vmToRemove=""
@@ -317,18 +327,35 @@ function getvmToRemove() {
 function getThirdOctate() {
     declare -a pod_cidr_array=()
     declare -a cidr_thirdOctate_array=()
-    for vm in $(virsh list | grep k8s-node | awk '{print $2}')
-    do
-        vm_name=$(echo "$vm" | tail -c 14)
-        pod_cidr_range=$(run_rmComm 'wrk' $vm_name 'cat pod_cidr.txt')
-        pod_cidr=$(echo ${pod_cidr_range:0:-4})
-        
-        #echo $pod_cidr
-        pod_cidr_array+=("$pod_cidr")
-        thirdOctate=$(echo $pod_cidr | cut -d . -f 3)
-        #echo $thirdOctate
-        cidr_thirdOctate_array+=("$thirdOctate")
-    done
+    if [[ $k8s_provider == "libvirt" ]]
+    then
+        for vm in $(virsh list | grep k8s-node | awk '{print $2}')
+        do
+            vm_name=$(echo "$vm" | tail -c 14)
+            pod_cidr_range=$(run_rmComm 'wrk' $vm_name 'cat pod_cidr.txt')
+            pod_cidr=$(echo ${pod_cidr_range:0:-4})
+            
+            #echo $pod_cidr
+            pod_cidr_array+=("$pod_cidr")
+            thirdOctate=$(echo $pod_cidr | cut -d . -f 3)
+            #echo $thirdOctate
+            cidr_thirdOctate_array+=("$thirdOctate")
+        done
+    elif [[ $k8s_provider == "virtualbox" ]]
+    then
+        for vm in $(VBoxManage list vms | grep k8s-node | awk '{print $1}' | cut -c 2-29)
+        do
+            vm_name=$(echo "$vm" | tail -c 14)
+            pod_cidr_range=$(run_rmComm 'wrk' $vm_name 'cat pod_cidr.txt')
+            pod_cidr=$(echo ${pod_cidr_range:0:-4})
+            
+            #echo $pod_cidr
+            pod_cidr_array+=("$pod_cidr")
+            thirdOctate=$(echo $pod_cidr | cut -d . -f 3)
+            #echo $thirdOctate
+            cidr_thirdOctate_array+=("$thirdOctate")
+        done
+    fi
     
     local maxThirdOctate=0
     

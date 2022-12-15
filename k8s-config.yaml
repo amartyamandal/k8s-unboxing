@@ -29,16 +29,16 @@ k8s:
   ip_start: 192.168.121.128
   ip_end: 192.168.121.254
   ncpnd: 1
-  nwrknd: 3
+  nwrknd: 0
   cni: "default"
   V: 1.25
   CRI_CTL_V: 1.25
   CONTD_V: 1.6
   CNI_PLUGIN_V: 1.1
-  build_directory: "path/to/build_directory"
-  runtime: "gvisor"
-  runtime_v: 2.4
+  build_directory: "/home/vindpro/github/k8s_build_lab"
+  runtime: "runc"
+  runtime_v: 1.1
 node:
-  private_key_name: "ssh_key_name"
+  private_key_name: "vindpro_local"
   os: "generic/ubuntu2204"
 
