@@ -106,20 +106,20 @@ else
    
 fi
 
-if [ -z "${k8s_runtime// }" ]
+if [ -z "${node_runtime// }" ]
 then
     echo "No runtime specified"
 else
-    if [ -z "${k8s_runtime_v// }" ]
+    if [ -z "${node_runtime_v// }" ]
     then
         echo "runtime version not supplied"
     else
-        if [[ "$k8s_runtime" == "crun" ]]
+        if [[ "$node_runtime" == "crun" ]]
         then
-            DIR_CRUN=$project_path/.tmp/crun_$k8s_runtime_v
+            DIR_CRUN=$project_path/.tmp/crun_$node_runtime_v
             if [ -d "$DIR_CRUN" ];
             then
-                echo "crun binaries exists for version "$k8s_runtime_v
+                echo "crun binaries exists for version "$node_runtime_v
             else
                 echo "build & copy crun binaries for main "
             
@@ -132,7 +132,7 @@ else
                 cd $crun_path
                 
 
-                git checkout $k8s_runtime_v
+                git checkout $node_runtime_v
                 sudo ./autogen.sh
                 sudo ./configure  #--enable-shared
                 sudo make
@@ -142,14 +142,14 @@ else
                 
                 sudo cp $crun_binary_path/crun $DIR_CRUN/crun
             fi
-        elif [[ "$k8s_runtime" == "runc" ]]
+        elif [[ "$node_runtime" == "runc" ]]
         then
-            DIR_RUNC=$project_path/.tmp/runc_$k8s_runtime_v
+            DIR_RUNC=$project_path/.tmp/runc_$node_runtime_v
             if [ -d "$DIR_RUNC" ];
             then
-                echo "runc binaries exists for version "$k8s_runtime_v
+                echo "runc binaries exists for version "$node_runtime_v
             else
-                echo "build & copy runc binaries for version "$k8s_runtime_v
+                echo "build & copy runc binaries for version "$node_runtime_v
                 
                 runc_path=$k8s_build_directory/runc 
                 runc_binary_path=$runc_path
@@ -157,7 +157,7 @@ else
 
                 cd $runc_path
 
-                git checkout release-$k8s_runtime_v
+                git checkout release-$node_runtime_v
                 sudo make
 
                 sudo mkdir $DIR_RUNC
@@ -166,10 +166,10 @@ else
                 sudo cp $runc_binary_path/runc $DIR_RUNC/runc
             
             fi
-        elif [[ "$k8s_runtime" == "kata" ]]
+        elif [[ "$node_runtime" == "kata" ]]
         then
             echo "runtime will be built in the worker node itself"
-        elif [[ "$k8s_runtime" == "gvisor" ]]
+        elif [[ "$node_runtime" == "gvisor" ]]
         then
             echo "runtime will be built in the worker node itself"
         else

@@ -4,7 +4,7 @@ source ./configure/functions/utility.sh
 pcpcnt=$(getndCount cp $k8s_provider)
 pwrkcnt=$(getndCount wrk $k8s_provider)
 plbcnt=$(getndCount lb $k8s_provider)
-finalndcnt=$k8s_nwrknd
+finalndcnt=$node_nwrknd
 requiredndcnt=0
 if [[ $pcpcnt -gt 0 ]] && [ $plbcnt -gt 0 ] 
 then

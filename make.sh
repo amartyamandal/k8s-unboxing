@@ -58,15 +58,15 @@ fi
 # sudo apt-get install -y make git gcc build-essential pkgconf libtool \
 # libsystemd-dev libprotobuf-c-dev libcap-dev libseccomp-dev libyajl-dev \
 # libgcrypt20-dev go-md2man autoconf python3 automake
-if [ -z "${k8s_runtime// }" ]
+if [ -z "${node_runtime// }" ]
 then
     echo "No runtime specified"
 else
-    if [ -z "${k8s_runtime_v// }" ]
+    if [ -z "${node_runtime_v// }" ]
     then
         echo "runtime version not supplied"
     else
-        if [[ "$k8s_runtime" == "crun" ]]
+        if [[ "$node_runtime" == "crun" ]]
         then
             if [ -d "$repo_CRUN" ];
             then
@@ -75,7 +75,7 @@ else
                 echo "downloading crun source"
                 git clone https://github.com/containers/crun.git
             fi
-        elif [[ "$k8s_runtime" == "runc" ]]
+        elif [[ "$node_runtime" == "runc" ]]
         then
             if [ -d "$repo_RUNC" ];
             then
@@ -84,10 +84,10 @@ else
                 echo "downloading runc source"
                 git clone https://github.com/opencontainers/runc.git
             fi
-        elif [[ "$k8s_runtime" == "kata" ]]
+        elif [[ "$node_runtime" == "kata" ]]
         then
             echo "runtime will be compiled in the worker node itself"
-        elif [[ "$k8s_runtime" == "gvisor" ]]
+        elif [[ "$node_runtime" == "gvisor" ]]
         then
             echo "runtime will be compiled in the worker node itself"
         else

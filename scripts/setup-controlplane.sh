@@ -10,6 +10,10 @@ then
     sudo virsh net-define --file .tmp/vagrant-libvirt.xml
     sudo virsh net-start vagrant-libvirt
     sudo virsh net-autostart vagrant-libvirt
+
+    sudo virsh net-define --file .tmp/vagrant-libvirt-node.xml
+    sudo virsh net-start vagrant-libvirt-node
+    sudo virsh net-autostart vagrant-libvirt-node
     # AGRANT_LOG=debug vagrant up
     ########################################
 fi

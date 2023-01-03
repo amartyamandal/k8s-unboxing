@@ -93,7 +93,6 @@ then
                 echo $VM_NAME
                 vgVmName=$(echo $VM_NAME | tail -c 14)
                 echo $vgVmName
-                # INET=$(run_rmComm 'wrk' $vgVmName 'ip address show eth0')
                 if [ $wrkndcntNow -gt 1 ]
                 then
                     kubectl drain $vgVmName --ignore-daemonsets
@@ -101,25 +100,13 @@ then
                 then
                     echo "YOU CAN'T SAFELY DRAIN ONLY NODE IN YOU WORKER POOL! NOT DRAINING, BUT REMOVING ANYWAY!!"
                 fi
-                # ##***virsh shutdown --domain $VM_NAME
                 vbVM_NAME=$(VBoxManage list vms | grep $VM_NAME | awk '{print $1}' | cut -c 2-49)
                 VBoxManage controlvm $vbVM_NAME poweroff
                 VBoxManage unregistervm $vbVM_NAME  --delete
-                # sleep 20
-                # ##***virsh undefine --domain $VM_NAME --remove-all-storage
 
                 kubectl delete node $vgVmName
 
-                # INTERNAL_IP=$(echo $INET | sed -e 's/^.*inet //' -e 's/\/.*$//' | tr -d '\n')
-                # echo $INTERNAL_IP
-
-                # INTERNAL_MAC=$(echo $INET | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}' | sed -n '1p')
-
-                # echo $INTERNAL_MAC
-
                 rm -f .tmp/$vgVmName-routing.sh
-
-                # ##****virsh net-update vagrant-libvirt delete ip-dhcp-host "<host mac='$INTERNAL_MAC' name='$vgVmName' ip='$INTERNAL_IP'/>" --live --config 
             done
         fi
     else

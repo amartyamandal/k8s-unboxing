@@ -100,31 +100,31 @@ done
 
 copyFile 'wrk' '.tmp/crictl_'$k8s_CRI_CTL_V'/crictl' '' 'k8s-node-'$1
 k8s_oci_runtime=""
-if [ -z "${k8s_runtime// }" ]
+if [ -z "${node_runtime// }" ]
 then
     echo "No runtime specified"
 else
-    if [ -z "${k8s_runtime_v// }" ]
+    if [ -z "${node_runtime_v// }" ]
     then
         echo "runtime version not supplied"
     else
-        if [[ "$k8s_runtime" == "crun" ]]
+        if [[ "$node_runtime" == "crun" ]]
         then
             k8s_oci_runtime=crun
             echo "copying crun as runc....."
-            copyFile 'wrk' '.tmp/crun_'$k8s_runtime_v'/crun' 'runc' 'k8s-node-'$1
-        elif [[ "$k8s_runtime" == "runc" ]]
+            copyFile 'wrk' '.tmp/crun_'$node_runtime_v'/crun' 'runc' 'k8s-node-'$1
+        elif [[ "$node_runtime" == "runc" ]]
         then
             k8s_oci_runtime=runc
             echo "copying runc....."
-            copyFile 'wrk' '.tmp/runc_'$k8s_runtime_v'/runc' '' 'k8s-node-'$1
-        elif [[ "$k8s_runtime" == "kata" ]]
+            copyFile 'wrk' '.tmp/runc_'$node_runtime_v'/runc' '' 'k8s-node-'$1
+        elif [[ "$node_runtime" == "kata" ]]
         then
             k8s_oci_runtime=kata
             echo "kata will be build & configured during node configuration....."
-        elif [[ "$k8s_runtime" == "gvisor" ]]
+        elif [[ "$node_runtime" == "gvisor" ]]
         then
-            copyFile 'wrk' '.tmp/runc_'$k8s_runtime_v'/runc' '' 'k8s-node-'$1
+            copyFile 'wrk' '.tmp/runc_'$node_runtime_v'/runc' '' 'k8s-node-'$1
             k8s_oci_runtime=gvisor
             echo "gvisor will be configured during node configuration....."
         else

@@ -136,7 +136,7 @@ function validate_yaml_input {
         echo "control plane number of nodes not supplied"
         exit 1
     fi
-    if [ -z "${k8s_nwrknd// }" ]
+    if [ -z "${node_nwrknd// }" ]
     then
         echo "Number of worker nodes not supplied"
         exit 1
@@ -181,12 +181,12 @@ function validate_yaml_input {
         echo "node_os value not supplied"
         exit 1
     fi
-    if [ -z "${k8s_runtime// }" ]
+    if [ -z "${node_runtime// }" ]
     then
         echo "runtime not supplied"
         exit 1
     fi
-    if [ -z "${k8s_runtime_v// }" ]
+    if [ -z "${node_runtime_v// }" ]
     then
         echo "runtime version not supplied"
         exit 1

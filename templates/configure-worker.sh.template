@@ -67,7 +67,7 @@ cat <<EOCONTD
 echo "Configure containerd"
 sudo mkdir -p /etc/containerd/
 EOCONTD
-if [ "$k8s_runtime" = "runc" ]
+if [ "$node_runtime" = "runc" ]
 then
 cat <<EOCONTD
 chmod +x runc
@@ -123,7 +123,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             async_remove = false
 EOF
 EOCONTD
-elif [ "$k8s_runtime" = "crun" ]
+elif [ "$node_runtime" = "crun" ]
 then
 cat <<EOCONTD
 chmod +x runc
@@ -179,7 +179,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             async_remove = false
 EOF
 EOCONTD
-elif [ "$k8s_runtime" = "kata" ]
+elif [ "$node_runtime" = "kata" ]
 then
 cat <<EOCONTD
 echo "check for virtualization compatibility"
@@ -249,7 +249,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
             conf_template = ""
 EOF
 EOCONTD
-elif [ "$k8s_runtime" = "gvisor" ]
+elif [ "$node_runtime" = "gvisor" ]
 then
 cat <<EOCONTD
 chmod +x runc
@@ -441,7 +441,7 @@ sudo systemctl start containerd kubelet kube-proxy
 
 sudo systemctl restart containerd kubelet kube-proxy
 EOW
-if [ "$k8s_runtime" = "gvisor" ]
+if [ "$node_runtime" = "gvisor" ]
 then
 cat <<EOCGRP
 sleep 10
