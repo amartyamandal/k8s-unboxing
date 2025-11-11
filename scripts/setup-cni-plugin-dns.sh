@@ -18,12 +18,12 @@ calicoresource=$(kubectl get ns | grep calico-system -c)
 if [ $calicoresource -gt 0 ]
 then
     kubectl delete -f ./cni/calico/custom-resources.yaml
-    kubectl delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
+    kubectl delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml
 fi
 if [[ $k8s_cni == "calico" ]]
 then
   echo "setup calico..."
-  kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
+  kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml
 
   sleep 20
   kubectl create -f ./cni/calico/custom-resources.yaml
@@ -45,6 +45,6 @@ fi
 
 
 
-# kubectl delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
+# kubectl delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/tigera-operator.yaml
 # kubectl delete -f ./cni/calico/custom-resources.yaml
 # kubectl delete -f ./dns/coredns/coredns-1.8.yaml
