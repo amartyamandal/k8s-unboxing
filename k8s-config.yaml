@@ -37,7 +37,7 @@ k8s:
   CNI_PLUGIN_V: 1.5
   build_directory: "/path/to/build_directory"
   runtime: "runc"
-  runtime_v: 1.1.12
+  runtime_v: 1.1
 node:
   private_key_name: "ssh_key_name"
   os: "generic/ubuntu2204"
