@@ -31,10 +31,10 @@ k8s:
   ncpnd: 1
   nwrknd: 0
   cni: "default"
-  V: 1.25
-  CRI_CTL_V: 1.25
-  CONTD_V: 1.6
-  CNI_PLUGIN_V: 1.1
+  V: 1.30
+  CRI_CTL_V: 1.30
+  CONTD_V: 1.7
+  CNI_PLUGIN_V: 1.5
   build_directory: "/path/to/build_directory"
   runtime: "runc"
   runtime_v: 1.1

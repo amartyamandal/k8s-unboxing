@@ -33,17 +33,20 @@ k8s:
   ncpnd: 1
   nwrknd: 2
   cni: "default"
-  V: 1.25
-  CRI_CTL_V: 1.25
-  RUNC_V: 1.1
+  V: 1.30
+  CRI_CTL_V: 1.30
+  RUNC_V: 1.1.12
   CRUN_V: 1.7
-  CONTD_V: 1.6
-  CNI_PLUGIN_V: 1.1
+  CONTD_V: 1.7
+  CNI_PLUGIN_V: 1.5
   build_directory: "<path>"
 node:
   private_key_name: "ssh_key"
   os: "generic/ubuntu2204"
 </code></pre>
+
+> **Note:** For a comprehensive architectural and component-level review on how to evolve this testbench into a "professional-grade" Kubernetes distribution, please refer to the [IMPROVEMENTS.md](./IMPROVEMENTS.md) document.
+
 Github repo documentation still a work in progress and grow along with this series and will bring more clarity, it's only bash scripts (other than one exception of ansible, just to keep an entry point for future enhancement), using only bash is intentional, code is very much straight forward easy to understand and change and that is the primary objectives.
 
 following table would be helpful
